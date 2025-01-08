@@ -388,64 +388,74 @@ while (1)
 			}
 
 	//+++++++++++++++++++++++++
-			//main_schedule.bf.status_thermopile = STATUS_THERMOPILE_OK;
-
-
-if (mainflag.enableADC_Termopila)
-{
-	if (termopila_sm0 == 0)
-	{
-		ADC_set_reference(ADC_REF_INTERNAL_2_56V);
-		//ADC_start_and_wait_conv(ADC_CH_0);
-		ADC_start_conv(ADC_CH_0);
-
-		termopila_sm0++;
-	}
-	else
-	{
-		if (isr_flag.adcReady == 1)
-		{
-			isr_flag.adcReady = 0;
-			termopila_sm0 = 0;
-			//
-			uint8_t adclow = ADCL;
-			uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
-			//
-			if ( adc16 >= (uint16_t)TERMOPILA_ADC_VALUE )
+			//+++++++++++++++++++++++++
+			static int Termopile_counter;
+			static int Termopile_counter2;
+			static int Termpile_error_counter;
+			///////////////////////////
+			if (mainflag.sysTickMs)
 			{
-				main_schedule.bf.status_thermopile = STATUS_THERMOPILE_OK;
-				e.sensor[ERROR_IDX_THERMOPILE].code = 0;//NO ERROR
+				if (++Termopile_counter >= 50)//ms
+				{
+					//espera a que acabe...
+					if ( mainflag.enableADC_Temp == 0)//significa que ya termino de leer completo
+					{
+						if (termopila_sm0 == 0)
+						{
+							ADC_set_reference(ADC_REF_INTERNAL_2_56V);
+							ADC_start_conv(ADC_CH_0);
 
+							termopila_sm0++;
+						}
+						else
+						{
+							if (isr_flag.adcReady == 1)
+							{
+								isr_flag.adcReady = 0;
+								termopila_sm0 = 0;
+								//
+								uint8_t adclow = ADCL;
+								uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
+								//
+								Termopile_counter = 0;
+
+								if ( adc16 < (uint16_t)TERMOPILA_ADC_VALUE )
+								{
+									//
+									Termpile_error_counter++;
+								}
+
+
+								if (++Termopile_counter2 >= 10) //cada 500 ms
+								{
+									Termopile_counter2 = 0;
+									//
+									if (Termpile_error_counter >= 10)
+									{
+										//se toma como error
+										main_schedule.bf.status_thermopile = STATUS_THERMOPILE_BAD;
+										e.sensor[ERROR_IDX_THERMOPILE].code = 1;//ERROR
+
+									}
+									else
+									{
+										main_schedule.bf.status_thermopile = STATUS_THERMOPILE_OK;
+										e.sensor[ERROR_IDX_THERMOPILE].code = 0;//NO ERROR
+
+									}
+									Termpile_error_counter = 0;
+								}
+
+							}
+						}
+					}
+				}
 			}
-			else
+			if (Termopile_counter < 50)
 			{
-				main_schedule.bf.status_thermopile = STATUS_THERMOPILE_BAD;
-				e.sensor[ERROR_IDX_THERMOPILE].code = 1;//ERROR
+				mainflag.enableADC_Temp = 1; //deja a 1
 			}
-
-	//
-			mainflag.enableADC_Temp = 1;	//autodeshabilita
-			mainflag.enableADC_Termopila = 0;
-		}
-	}
-}
-//			ADC_set_reference(ADC_REF_INTERNAL_2_56V);
-//			ADC_start_and_wait_conv(ADC_CH_0);
-//			uint8_t adclow = ADCL;
-//
-//			uint16_t ADC_temp=  (((uint16_t)ADCH)<<8) + adclow;
-//
-//			if (1)//( ADC_temp >= (uint16_t)TERMOPILA_ADC_VALUE )
-//			{
-//				main_schedule.bf.status_thermopile = STATUS_THERMOPILE_OK;
-//				e.sensor[ERROR_IDX_THERMOPILE].code = 0;//NO ERROR
-//
-//			}
-//			else
-//			{
-//				main_schedule.bf.status_thermopile = STATUS_THERMOPILE_BAD;
-//				e.sensor[ERROR_IDX_THERMOPILE].code = 1;//ERROR
-//			}
+////////////////////////////////////////////////////////////////////////////////////
 
 
 

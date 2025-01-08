@@ -17,11 +17,29 @@
 
 int TCtemperature;
 
-#define INA326_G 500.0f
-#define REF200_I 100E-6
+#define INA326_G 49.9f
+#define REF200_I 0.001f
 #define GxI 0.05f//(INA326_G*REF200_I)
 #define INA326_R_OPPOSITE 100.0f//OHMS
+/*
+G*(Rpt100*Iref - INA326_R_OPPOSITE*Iref) = Voltaje_ADC_uC
+despejando Rpt100...
 
+R = Voltaje_ADC_uC/(G*Iref) + INA326_R_OPPOSITE
+
+Por otro lado tenemos que Voltaje_ADC_uC es :
+[ADCH:ADCL] * (5V/1023)
+
+Entonces la ecuacion es la siguiente
+
+Rpt100 = [ADCH:ADCL]*(5/(1023*G*Iref)) + INA326_R_OPPOSITE
+
+Resolviendo tenemos
+octave:1> 5/(1023*49.9*0.001)
+ans = 0.097948
+
+Rpt100 = [ADCH:ADCL]*(0.097948) + INA326_R_OPPOSITE
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -277,7 +295,7 @@ void MAX6675_convertIntTmptr2str_wformatPrintComplete(int16_t temper, char *str_
 #endif
 
 
-#define TEMPERATURE_SMOOTHALG_MAXSIZE 20// 8
+#define TEMPERATURE_SMOOTHALG_MAXSIZE 30// 8
 //static int16_t smoothVector[TEMPERATURE_SMOOTHALG_MAXSIZE];
 static uint16_t smoothVector[TEMPERATURE_SMOOTHALG_MAXSIZE];
 
@@ -387,8 +405,16 @@ int8_t MAX6675_smoothAlg_nonblock_job(int16_t *TCtemperature)
 		if (smoothAnswer > 0.0f)
 		{
 			//TCtemperature = ( (smoothAnswer * MAX6675_TMPR_MAX)/ (4095) )  + MAX6675_TEMPERATURE_DEVIATION;;
-			float Rtd = (smoothAnswer*0.097752f)+ INA326_R_OPPOSITE;
-			Rtd *= 1.011f;//1.0051
+//			float Rtd = (smoothAnswer*0.097752f)+ INA326_R_OPPOSITE;
+//			Rtd *= 1.011f;//1.0051
+//
+
+//			octave:1> 5/(1023*49.9*0.001)
+//			ans = 0.097948
+//
+			float Rtd = (smoothAnswer*0.097948f)+ INA326_R_OPPOSITE;
+			Rtd *= 1.011f;//factor de correccion
+
 			*TCtemperature = (int)T_rtd(Rtd);
 		}
 		else
@@ -497,7 +523,7 @@ if (mainflag.enableADC_Temp)
 
 			//
 			mainflag.enableADC_Temp = 0;//autodeshabilita
-			mainflag.enableADC_Termopila = 1;
+			//mainflag.enableADC_Termopila = 1;
 		}
 	}
 }
