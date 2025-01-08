@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include "smoothAlg.h"
 
-int8_t smoothAlg_nonblock(struct _smoothAlg *smooth, int16_t *buffer, int SMOOTHALG_MAXSIZE, float *Answer)
+int8_t smoothAlg_nonblock(struct _smoothAlg *smooth, uint16_t *buffer, int SMOOTHALG_MAXSIZE, float *Answer)
 {
 //	static float average=0;
 //	static int16_t Pos;	//# de elementos > que la media

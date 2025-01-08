@@ -37,26 +37,12 @@ struct _main_schedule
 				unsigned status_thermocuple:1;
 				unsigned status_thermopile:1;
 				unsigned status_highlimit:1;
-				unsigned __a:2;
+				unsigned display_ACIERInd:1;
+				unsigned __a:1;
 		}bf;
 };
 
-#define ERROR_SIZE 3
-enum ERROR_IDX{
-	ERROR_IDX_THERMOCOUPLE = 0,
-	ERROR_IDX_THERMOPILE,
-	ERROR_IDX_HIGHLIMIT
-};
 
-struct _error
-{
-	int8_t sm0;
-	int8_t code;
-	int8_t e;
-	uint16_t timer;
-	int8_t table[ERROR_SIZE];
-};
-extern struct _error error;
 
 
 enum STARTUP_STATUS{
@@ -335,5 +321,7 @@ extern struct _t EEMEM COOKTIME[BASKET_MAXSIZE];
 #define KB_LYOUT_RIGHT_UP	5
 #define KB_LYOUT_RIGHT_STARTSTOP 6
 
+
+extern struct PID mypid0;
 
 #endif /* MAIN_H_ */

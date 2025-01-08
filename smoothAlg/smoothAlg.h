@@ -19,6 +19,6 @@ struct _smoothAlg
 	int SMOOTHALG_MAXSIZE;
 };
 
-int8_t smoothAlg_nonblock(struct _smoothAlg *smooth, int16_t *buffer, int SMOOTHALG_MAXSIZE, float *Answer);
+int8_t smoothAlg_nonblock(struct _smoothAlg *smooth, uint16_t *buffer, int SMOOTHALG_MAXSIZE, float *Answer);
 
 #endif /* SMOOTHALG_SMOOTHALG_H_ */

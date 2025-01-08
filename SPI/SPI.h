@@ -27,10 +27,15 @@
 	#define PINxKB_SPI_SCK		7
 
 	//Application specific
-	#define PORTWxSPI_CS 	PORTB
-	#define PORTRxSPI_CS 	PINB
-	#define CONFIGIOxSPI_CS 	DDRB
-	#define PINxKB_SPI_CS	4
+//	#define PORTWxSPI_CS 	PORTB
+//	#define PORTRxSPI_CS 	PINB
+//	#define CONFIGIOxSPI_CS 	DDRB
+//	#define PINxKB_SPI_CS	4
+
+	#define PORTWxSPI_CS 	PORTD
+	#define PORTRxSPI_CS 	PIND
+	#define CONFIGIOxSPI_CS 	DDRD
+	#define PINxKB_SPI_CS	7
 
     /****************************************************************************************
                                 Definir el orden LSB / MSB

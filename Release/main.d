@@ -4,7 +4,7 @@ main.o: ../main.c ../main.h ../types.h ../system.h ../ikb/ikb.h \
  ../pinGetLevel/pinGetLevel.h ../psmode_program.h ../psmode_operative.h \
  ../psmode_viewTemp.h ../indicator/indicator.h ../pid/pid.h \
  ../Display7S/display7s.h ../display7s_setup.h ../disp7s_applevel.h \
- ../adc/adc.h
+ ../adc/adc.h ../error/error.h
 ../main.h:
 ../types.h:
 ../system.h:
@@ -25,3 +25,4 @@ main.o: ../main.c ../main.h ../types.h ../system.h ../ikb/ikb.h \
 ../display7s_setup.h:
 ../disp7s_applevel.h:
 ../adc/adc.h:
+../error/error.h:

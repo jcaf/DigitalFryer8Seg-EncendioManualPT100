@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 //define now is in local:"main.h"
 //#define F_CPU 16000000UL	//16000000UL		//AVR-GCC

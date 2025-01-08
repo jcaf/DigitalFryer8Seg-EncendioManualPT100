@@ -93,6 +93,24 @@ const unsigned char DIPS7S_MSG_HIGHLIMIT[4] =
 		DISP7Sinvfix(D7S_DATA_BLANK),
 		D7S_DATA_BLANK
 };
+
+const unsigned char DIPS7S_MSG_ACIE[4] =
+{
+		D7S_DATA_A,
+		D7S_DATA_C,
+		DISP7Sinvfix(D7S_DATA_I),
+		D7S_DATA_E
+};
+
+
+const unsigned char DIPS7S_MSG_rInd[4] =
+{
+		D7S_DATA_r| (1<< D7S_DP),
+		D7S_DATA_I,
+		DISP7Sinvfix(D7S_DATA_n),
+		D7S_DATA_d
+};
+
 /*
 void disp7s_datarr_ErrorTh(void)
 {

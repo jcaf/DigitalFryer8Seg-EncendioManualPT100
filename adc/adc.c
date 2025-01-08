@@ -13,7 +13,8 @@ LSB.
 
 void ADC_set_channel(uint8_t channel)
 {
-	ADMUX = (ADMUX & 0xF0) | (channel & 0x0F);
+	//ADMUX = (ADMUX & 0xF0) | (channel & 0x0F);
+	ADMUX = (ADMUX & 0xE0) | (channel & 0x1F);
 }
 /*
 ADC Voltage Reference Selection
@@ -29,7 +30,7 @@ V CC . See section ADC Noise Canceler on how to connect this pin.
 */
 void ADC_set_reference(uint8_t ref)
 {
-	ADMUX = (ADMUX & 0x3F) | ((ref&0x03)<<6);
+	ADMUX = (ADMUX & 0x3F) | ((ref & 0x03) << 6);
 }
 
 /*
@@ -76,8 +77,6 @@ uint8_t ADC_get_resultL(void)
 {
 	return ADCL;
 }
-
-
 
 void ADC_init(int8_t mode, int8_t reference, int8_t preescaler)
 {
@@ -134,8 +133,14 @@ conversion is completed.
 void ADC_start_and_wait_conv(uint8_t channel)
 {
 	ADC_start_conv(channel);
-	while (ADCSRA & (1<<ADSC))
+//	while (ADCSRA & (1<<ADSC))
+//		{;}
+
+	//wait for conversion to finish
+	while(!(ADCSRA & (1 << ADIF)))
 		{;}
+	ADCSRA |= (1 << ADIF); //reset as required
+
 }
 
 /*
@@ -188,6 +193,7 @@ uint16_t ADC_read(uint8_t channel)
 		//es mejor trabajarlo por interrupciones
 	}
 
+	//Leer primero la parte baja ADCL para bloquear su parte alta y leer con consistencia
 	resultL = ADC_get_resultL();
 
 	if (ADMUX & (1<<ADLAR))//left?

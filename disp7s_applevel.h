@@ -23,6 +23,9 @@ extern const unsigned char DIPS7S_MSG_THERMOCOUPLE_NC[4];
 extern const unsigned char DIPS7S_MSG_THERMOPILE[4];
 extern const unsigned char DIPS7S_MSG_HIGHLIMIT[4];
 
+extern const unsigned char DIPS7S_MSG_ACIE[4];
+extern const unsigned char DIPS7S_MSG_rInd[4];
+
 /* Numerical 0 to 9 */
 //0x3F,//    0b0011 1111,//0
 #define D7S_DATA_0 ((0<<D7S_DP)|(0<<D7S_G)|(1<<D7S_F)|(1<<D7S_E)|(1<<D7S_D)|(1<<D7S_C)|(1<<D7S_B)|(1<<D7S_A))
@@ -49,6 +52,11 @@ extern const unsigned char DIPS7S_MSG_HIGHLIMIT[4];
 // Display Off (cathode commun)
 #define D7S_DATA_BLANK 0
 
+
+//A
+#define D7S_DATA_A ((0<<D7S_DP)|(1<<D7S_G)|(1<<D7S_F)|(1<<D7S_E)|(0<<D7S_D)|(1<<D7S_C)|(1<<D7S_B)|(1<<D7S_A))
+//C
+#define D7S_DATA_C ((0<<D7S_DP)|(0<<D7S_G)|(1<<D7S_F)|(1<<D7S_E)|(1<<D7S_D)|(0<<D7S_C)|(0<<D7S_B)|(1<<D7S_A))
 
 //////////////////////////////////////////////////////
 //E
