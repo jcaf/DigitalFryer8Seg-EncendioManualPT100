@@ -21,10 +21,21 @@
 
 #define SYSTICK_MS 1	//1ms
 
+
+struct _isr_flag
+{
+	unsigned sysTickMs :1;
+	unsigned adcReady :1;
+	unsigned __a :6;
+};
+extern volatile struct _isr_flag isr_flag;
+
 struct _mainflag
 {
-		unsigned sysTickMs :1;
-		unsigned __a:7;
+	unsigned sysTickMs :1;
+	unsigned enableADC_Temp:1;
+	unsigned enableADC_Termopila:1;
+	unsigned __a:5;
 };
 struct _main_schedule
 {

@@ -314,21 +314,43 @@ int8_t MAX6675_accSamples(void)
 	//int16_t temperature12bits = MAX6675_get12bitsTemp();
 	//uint16_t  adc16= ( ((uint16_t)ADCH)<<8) + ADCL;
 	//
-	ADC_set_reference(ADC_REF_AVCC);
-	ADC_start_and_wait_conv(ADC_CH_2);
-	uint8_t adclow = ADCL;
-	uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
-	//
 
+static int sm0;
 
-	//
-	smoothVector[job_captureTemperature.counter0] = adc16;
-
-	if (++job_captureTemperature.counter0 >= TEMPERATURE_SMOOTHALG_MAXSIZE)
+	if (sm0 == 0)
 	{
-		job_captureTemperature.counter0 = 0x00;
-		return 1;
+		ADC_set_reference(ADC_REF_AVCC);
+		//ADC_start_and_wait_conv(ADC_CH_2);
+
+		ADC_start_conv(ADC_CH_2);
+	//	uint8_t adclow = ADCL;
+	//	uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
+		//
+
+		sm0++;
 	}
+	else
+	{
+		if (isr_flag.adcReady == 1)
+		{
+			isr_flag.adcReady = 0;
+			sm0 = 0;
+			//
+			uint8_t adclow = ADCL;
+			uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
+			//
+			//
+				smoothVector[job_captureTemperature.counter0] = adc16;
+
+				if (++job_captureTemperature.counter0 >= TEMPERATURE_SMOOTHALG_MAXSIZE)
+				{
+					job_captureTemperature.counter0 = 0x00;
+					return 1;
+				}
+		}
+	}
+
+
 
 	return 0;
 }
@@ -446,7 +468,8 @@ int8_t temperature_job(void)
 	static uint16_t MAX6675_ConversionTime_access;
 	int8_t MAX6675_job_rpta;
 
-
+if (mainflag.enableADC_Temp)
+{
 	if (MAX6675_sm0 == 0)
 	{
 		MAX6675_job_rpta = MAX6675_accSamples();
@@ -465,14 +488,19 @@ int8_t temperature_job(void)
 			if (pgrmode.bf.unitTemperature == FAHRENHEIT)
 			{
 //					TCtemperature = (TCtemperature*(9.0f/5)) + 32;
-//				TCtemperature = (TCtemperature*1.8f) + 32;
+				TCtemperature = (TCtemperature*1.8f) + 32;
 			}
 
 			MAX6675_sm0 = 0x00;
 
 			codret = 1;	//fin del proceso
+
+			//
+			mainflag.enableADC_Temp = 0;//autodeshabilita
+			mainflag.enableADC_Termopila = 1;
 		}
 	}
+}
 	return codret;
 
 }

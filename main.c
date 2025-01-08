@@ -55,13 +55,7 @@
 #include "adc/adc.h"
 #include "error/error.h"
 
-
-volatile struct _isr_flag
-{
-	unsigned sysTickMs :1;
-	unsigned __a :7;
-} isr_flag = { 0 };
-
+volatile struct _isr_flag isr_flag;
 struct _mainflag mainflag;
 
 struct _main_schedule main_schedule;
@@ -214,6 +208,7 @@ int main(void)
 	int counter1 = 0;
 	unsigned char str[10];//cambiar a char_arr
 	unsigned char data_array_buffer[DISP7S_TOTAL_NUMMAX];
+static int termopila_sm0;
 
 	disp7s_init();//new
 
@@ -258,6 +253,10 @@ int main(void)
 		{;}
 	ADCSRA |= (1 << ADIF); //reset as required
 
+//activar INTERRUPCIONES
+	BitTo1(ADCSRA,ADIE);//
+mainflag.enableADC_Temp = 1;	//autodeshabilita
+mainflag.enableADC_Termopila = 0;
 
 //	PinTo0(PORTWxCONTROLLER_ONOFF, PINxCONTROLLER_ONOFF);
 //	ConfigOutputPin(CONFIGIOxCONTROLLER_ONOFF, PINxCONTROLLER_ONOFF);
@@ -391,13 +390,28 @@ while (1)
 	//+++++++++++++++++++++++++
 			//main_schedule.bf.status_thermopile = STATUS_THERMOPILE_OK;
 
-			ADC_set_reference(ADC_REF_INTERNAL_2_56V);
-			ADC_start_and_wait_conv(ADC_CH_0);
+
+if (mainflag.enableADC_Termopila)
+{
+	if (termopila_sm0 == 0)
+	{
+		ADC_set_reference(ADC_REF_INTERNAL_2_56V);
+		//ADC_start_and_wait_conv(ADC_CH_0);
+		ADC_start_conv(ADC_CH_0);
+
+		termopila_sm0++;
+	}
+	else
+	{
+		if (isr_flag.adcReady == 1)
+		{
+			isr_flag.adcReady = 0;
+			termopila_sm0 = 0;
+			//
 			uint8_t adclow = ADCL;
-
-			uint16_t ADC_temp=  (((uint16_t)ADCH)<<8) + adclow;
-
-			if ( ADC_temp >= (uint16_t)TERMOPILA_ADC_VALUE )
+			uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
+			//
+			if ( adc16 >= (uint16_t)TERMOPILA_ADC_VALUE )
 			{
 				main_schedule.bf.status_thermopile = STATUS_THERMOPILE_OK;
 				e.sensor[ERROR_IDX_THERMOPILE].code = 0;//NO ERROR
@@ -408,6 +422,30 @@ while (1)
 				main_schedule.bf.status_thermopile = STATUS_THERMOPILE_BAD;
 				e.sensor[ERROR_IDX_THERMOPILE].code = 1;//ERROR
 			}
+
+	//
+			mainflag.enableADC_Temp = 1;	//autodeshabilita
+			mainflag.enableADC_Termopila = 0;
+		}
+	}
+}
+//			ADC_set_reference(ADC_REF_INTERNAL_2_56V);
+//			ADC_start_and_wait_conv(ADC_CH_0);
+//			uint8_t adclow = ADCL;
+//
+//			uint16_t ADC_temp=  (((uint16_t)ADCH)<<8) + adclow;
+//
+//			if (1)//( ADC_temp >= (uint16_t)TERMOPILA_ADC_VALUE )
+//			{
+//				main_schedule.bf.status_thermopile = STATUS_THERMOPILE_OK;
+//				e.sensor[ERROR_IDX_THERMOPILE].code = 0;//NO ERROR
+//
+//			}
+//			else
+//			{
+//				main_schedule.bf.status_thermopile = STATUS_THERMOPILE_BAD;
+//				e.sensor[ERROR_IDX_THERMOPILE].code = 1;//ERROR
+//			}
 
 
 
@@ -759,4 +797,8 @@ while (1)
 ISR(TIMER0_COMP_vect)
 {
 	isr_flag.sysTickMs = 1;
+}
+ISR(ADC_vect)
+{
+	isr_flag.adcReady = 1;
 }
