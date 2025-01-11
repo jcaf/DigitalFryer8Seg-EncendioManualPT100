@@ -15,7 +15,7 @@
 #include "../disp7s_applevel.h"
 #include "../adc/adc.h"
 
-int TCtemperature;
+int TCtemperature;// = 30;
 
 #define INA326_G 49.9f
 #define REF200_I 0.001f
@@ -296,106 +296,52 @@ void MAX6675_convertIntTmptr2str_wformatPrintComplete(int16_t temper, char *str_
 
 
 #define TEMPERATURE_SMOOTHALG_MAXSIZE 30// 8
-//static int16_t smoothVector[TEMPERATURE_SMOOTHALG_MAXSIZE];
 static uint16_t smoothVector[TEMPERATURE_SMOOTHALG_MAXSIZE];
 
 struct _smoothAlg smoothAlg_temp;
 const struct _smoothAlg smoothAlg_reset;
 
-//int8_t MAX6675_accSamples(void)
-//{
-//	int16_t temperature12bits = MAX6675_get12bitsTemp();
-//
-//	//
-//	if (temperature12bits == MAX6675_THERMOCOUPLED_OPEN)    //error cable disconnected ?
-//	{
-//		job_captureTemperature = job_reset;
-//		smoothAlg_temp = smoothAlg_reset;
-//
-//		return MAX6675_THERMOCOUPLED_OPEN;//-1
-//	}
-//	else
-//	{
-//		smoothVector[job_captureTemperature.counter0] = temperature12bits;
-//		if (++job_captureTemperature.counter0 >= TEMPERATURE_SMOOTHALG_MAXSIZE)
-//		{
-//			job_captureTemperature.counter0 = 0x00;
-//			return 1;
-//		}
-//	}
-//	return 0;
-//}
-//
-
-int8_t MAX6675_accSamples(void)
+int8_t AdqAccSamples(void)
 {
-	//int16_t temperature12bits = MAX6675_get12bitsTemp();
-	//uint16_t  adc16= ( ((uint16_t)ADCH)<<8) + ADCL;
-	//
-
-static int sm0;
+	static int sm0;
 
 	if (sm0 == 0)
 	{
-		ADC_set_reference(ADC_REF_AVCC);
-		//ADC_start_and_wait_conv(ADC_CH_2);
+		if (mainflag.ADCrecurso == ADC_LIBRE)
+		{
+			mainflag.ADCrecurso = ADC_OCUPADO;
 
-		ADC_start_conv(ADC_CH_2);
-	//	uint8_t adclow = ADCL;
-	//	uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
-		//
-
-		sm0++;
+			ADC_set_reference(ADC_REF_AVCC);
+			ADC_start_conv(ADC_CH_2);
+			//
+			sm0++;
+		}
 	}
 	else
 	{
 		if (isr_flag.adcReady == 1)
 		{
 			isr_flag.adcReady = 0;
+			mainflag.ADCrecurso = ADC_LIBRE;
 			sm0 = 0;
 			//
 			uint8_t adclow = ADCL;
 			uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
-			//
-			//
-				smoothVector[job_captureTemperature.counter0] = adc16;
 
-				if (++job_captureTemperature.counter0 >= TEMPERATURE_SMOOTHALG_MAXSIZE)
-				{
-					job_captureTemperature.counter0 = 0x00;
-					return 1;
-				}
+			smoothVector[job_captureTemperature.counter0] = adc16;
+
+			if (++job_captureTemperature.counter0 >= TEMPERATURE_SMOOTHALG_MAXSIZE)
+			{
+				job_captureTemperature.counter0 = 0x00;
+				return 1;
+			}
+
 		}
 	}
-
-
-
 	return 0;
 }
-
-
 /*****************************************************
-
 *****************************************************/
-//int8_t MAX6675_smoothAlg_nonblock_job(int16_t *TCtemperature)
-//{
-//	float smoothAnswer;
-//
-//	if (smoothAlg_nonblock(&smoothAlg_temp, smoothVector, TEMPERATURE_SMOOTHALG_MAXSIZE, &smoothAnswer))
-//	{
-//		if (smoothAnswer > 0.0f)
-//		{
-//			*TCtemperature = ( (smoothAnswer * MAX6675_TMPR_MAX)/ (4095) )  + MAX6675_TEMPERATURE_DEVIATION;;
-//		}
-//		else
-//		{
-//			*TCtemperature = 0;
-//		}
-//		return 1;
-//	}
-//	return 0;
-//}
-
 int8_t MAX6675_smoothAlg_nonblock_job(int16_t *TCtemperature)
 {
 	float smoothAnswer;
@@ -404,14 +350,6 @@ int8_t MAX6675_smoothAlg_nonblock_job(int16_t *TCtemperature)
 	{
 		if (smoothAnswer > 0.0f)
 		{
-			//TCtemperature = ( (smoothAnswer * MAX6675_TMPR_MAX)/ (4095) )  + MAX6675_TEMPERATURE_DEVIATION;;
-//			float Rtd = (smoothAnswer*0.097752f)+ INA326_R_OPPOSITE;
-//			Rtd *= 1.011f;//1.0051
-//
-
-//			octave:1> 5/(1023*49.9*0.001)
-//			ans = 0.097948
-//
 			float Rtd = (smoothAnswer*0.097948f)+ INA326_R_OPPOSITE;
 			Rtd *= 1.011f;//factor de correccion
 
@@ -430,103 +368,31 @@ int8_t MAX6675_smoothAlg_nonblock_job(int16_t *TCtemperature)
 tendria que cambiar la temperature_job para saber cuando tiene correctamente la temperatura
 para poder leer al inicio del programa, ojo xq se necesita el flag de systick
 *****************************************************/
-/*
-int8_t temperature_job(void)
-{
-	//int8_t codret = 0;
 
-//	TCtemperature = 30;
-	//
-	//1 leer ADC AHORA ES PA2 adc2
-	float Rtd;
-	uint16_t  adc16;
-//
-//
-//	adc16= ( ((uint16_t)ADCH)<<8) + ADCL;
-//											//	float Vout = adc16*(5.0f/1023.0f);
-//											//	float Rtd = (Vout/GxI) + INA326_R_OPPOSITE;
-//	Rtd = (adc16*0.097752f)+ INA326_R_OPPOSITE;
-//	TCtemperature = (int)T_rtd(Rtd);
-//	return 1;
-
-
-	//static int MAX6675_ConversionTime_access;
-static int cc=0;
-static float acc=0;
-static int t;
-float r;
-
-	if (mainflag.sysTickMs)
-	{
-		if (1)
-		{
-			t = 0;//cada 100ms
-			//
-			ADC_set_reference(ADC_REF_AVCC);
-			ADC_start_and_wait_conv(ADC_CH_2);
-			uint8_t adclow = ADCL;
-			uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
-			//
-			acc = acc + adc16;
-
-			if (++cc >= TEMPERATURE_SMOOTHALG_MAXSIZE)
-			{
-				cc = 0;
-
-				r =	acc /TEMPERATURE_SMOOTHALG_MAXSIZE;
-				Rtd = (r*0.097752f)+ INA326_R_OPPOSITE;
-				Rtd *= 1.011f;//1.0051
-				TCtemperature = (int)(T_rtd(Rtd));
-				acc = 0;
-				return 1;
-			}
-		}
-	}
-
-	return 0;
-}
-*/
 int8_t temperature_job(void)
 {
 	int8_t codret = 0;
+	static int8_t sm0;
 
-	static int8_t MAX6675_sm0;
-	static uint16_t MAX6675_ConversionTime_access;
-	int8_t MAX6675_job_rpta;
-
-if (mainflag.enableADC_Temp)
-{
-	if (MAX6675_sm0 == 0)
+	if (sm0 == 0)
 	{
-		MAX6675_job_rpta = MAX6675_accSamples();
-
-		if (MAX6675_job_rpta == 1)
+		if (AdqAccSamples() )
 		{
-			MAX6675_sm0++;
+			sm0++;
 		}
 	}
 	else
 	{
 		if (MAX6675_smoothAlg_nonblock_job( &TCtemperature ))
 		{
-			//
-			//Por defecto MAX6675 entrega en grados Celsius
 			if (pgrmode.bf.unitTemperature == FAHRENHEIT)
 			{
-//					TCtemperature = (TCtemperature*(9.0f/5)) + 32;
-				TCtemperature = (TCtemperature*1.8f) + 32;
+				TCtemperature = (TCtemperature*1.8f) + 32;//TCtemperature = (TCtemperature*(9.0f/5)) + 32;
 			}
-
-			MAX6675_sm0 = 0x00;
+			sm0 = 0x00;
 
 			codret = 1;	//fin del proceso
-
-			//
-			mainflag.enableADC_Temp = 0;//autodeshabilita
-			//mainflag.enableADC_Termopila = 1;
 		}
 	}
-}
 	return codret;
-
 }

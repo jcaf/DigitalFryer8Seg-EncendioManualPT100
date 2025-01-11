@@ -35,6 +35,7 @@ struct _mainflag
 	unsigned sysTickMs :1;
 	unsigned enableADC_Temp:1;
 	unsigned enableADC_Termopila:1;
+	unsigned ADCrecurso:1;
 	unsigned __a:5;
 };
 struct _main_schedule
@@ -334,5 +335,9 @@ extern struct _t EEMEM COOKTIME[BASKET_MAXSIZE];
 
 
 extern struct PID mypid0;
+
+
+#define ADC_LIBRE 0
+#define ADC_OCUPADO 1
 
 #endif /* MAIN_H_ */

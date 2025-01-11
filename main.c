@@ -202,13 +202,93 @@ void fryer_init(void)
 #define ADC_VOLTAGE_REFERENCE 2.56
 #define TERMOPILA_ADC_VALUE	((1023.0f*TERMOPILA_VOLTAGE)/ADC_VOLTAGE_REFERENCE)
 
+struct _termopila
+{
+	int sm0;
+	int sm1;
+	int counter0;
+	int counter1;
+	int error_counter;
+}termopila;
+const struct _termopila termopilaReset;
+
+void termopila_error(void)
+{
+	if (termopila.sm0 == 0)
+	{
+		if (mainflag.sysTickMs)
+		{
+			if (++termopila.counter0 >= 50)
+			{
+				termopila.counter0 = 0;
+				termopila.sm0++;
+			}
+		}
+	}
+	else
+	{
+		if (termopila.sm1 == 0)
+		{
+			if ( mainflag.ADCrecurso == ADC_LIBRE)
+			{
+				mainflag.ADCrecurso = ADC_OCUPADO;
+				//
+				ADC_set_reference(ADC_REF_INTERNAL_2_56V);
+				ADC_start_conv(ADC_CH_0);
+
+				termopila.sm1++;
+			}
+		}
+		else
+		{
+			if (isr_flag.adcReady == 1)
+			{
+				isr_flag.adcReady = 0;
+				//
+				mainflag.ADCrecurso = ADC_LIBRE;
+				termopila.sm0 = 0;
+				termopila.sm1 = 0;
+				//
+				uint8_t adclow = ADCL;
+				uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
+				//
+				if ( adc16 < (uint16_t)TERMOPILA_ADC_VALUE )
+				{
+					termopila.error_counter++;
+				}
+
+				if (++termopila.counter1 >= 10) //cada 500 ms
+				{
+					termopila.counter1 = 0;
+					//
+					if (termopila.error_counter >= 10)
+					{
+						//main_schedule.bf.status_thermopile = STATUS_THERMOPILE_BAD;
+						e.sensor[ERROR_IDX_THERMOPILE].code = 1;//ERROR
+					}
+					else
+					{
+						//main_schedule.bf.status_thermopile = STATUS_THERMOPILE_OK;
+						e.sensor[ERROR_IDX_THERMOPILE].code = 0;//NO ERROR
+					}
+
+					termopila.error_counter = 0;
+				}
+
+			}
+		}
+
+	}
+}
+
 int main(void)
 {
 	int counter0 = 0;
 	int counter1 = 0;
 	unsigned char str[10];//cambiar a char_arr
 	unsigned char data_array_buffer[DISP7S_TOTAL_NUMMAX];
-static int termopila_sm0;
+	int8_t systick_counter0=0;
+	int16_t counter_displayACIER=0;
 
 	disp7s_init();//new
 
@@ -236,16 +316,7 @@ static int termopila_sm0;
 	PinTo0(PORTWxSOL_GAS_QUEMADOR, PINxSOL_GAS_QUEMADOR);
 	ConfigOutputPin(CONFIGIOxSOL_GAS_QUEMADOR, PINxSOL_GAS_QUEMADOR);
 
-//CONFIGURACION PARA EL CANAL 0
-//	//ADC_init(ADC_MODE_AUTOTRIGGER_DISABLED, ADC_REF_INTERNAL_2_56V, ADC_PRESCALER_128);
-//	ADC_init(ADC_MODE_AUTOTRIGGER_FREE_RUNNING, ADC_REF_INTERNAL_2_56V, ADC_PRESCALER_128);
-//	//ADC_start_and_wait_conv(ADC_CH_0);
-//	ADC_set_channel(ADC_CH_0);
-
-//	ADC_init(ADC_MODE_AUTOTRIGGER_FREE_RUNNING, ADC_REF_AVCC, ADC_PRESCALER_128);
-
 	ADC_init(ADC_MODE_AUTOTRIGGER_DISABLED, ADC_REF_AVCC, ADC_PRESCALER_128);
-	//ADC_init(ADC_MODE_AUTOTRIGGER_DISABLED, ADC_REF_AVCC, ADC_PRESCALER_128);
 	ADC_set_channel(ADC_CH_2);
 
 	BitTo1(ADCSRA, ADSC);
@@ -253,13 +324,10 @@ static int termopila_sm0;
 		{;}
 	ADCSRA |= (1 << ADIF); //reset as required
 
-//activar INTERRUPCIONES
+	//activar INTERRUPCIONES
 	BitTo1(ADCSRA,ADIE);//
-mainflag.enableADC_Temp = 1;	//autodeshabilita
-mainflag.enableADC_Termopila = 0;
 
-//	PinTo0(PORTWxCONTROLLER_ONOFF, PINxCONTROLLER_ONOFF);
-//	ConfigOutputPin(CONFIGIOxCONTROLLER_ONOFF, PINxCONTROLLER_ONOFF);
+	mainflag.ADCrecurso = ADC_LIBRE;
 
 	PinTo1(PORTWxHIGHLIMIT,PINxHIGHLIMIT);
 	ConfigInputPin(CONFIGIOxHIGHLIMIT, PINxHIGHLIMIT);
@@ -269,12 +337,6 @@ mainflag.enableADC_Termopila = 0;
 	indicator_setPortPin(&PORTWxBUZZER, PINxBUZZER);
 	indicatorTimed_setKSysTickTime_ms(75/SYSTICK_MS);
 
-
-	//lcdan_init();
-
-//	InitSPI_MASTER();
-
-
 	//With prescaler 64, gets 1 ms exact (OCR0=249)
 	TCNT0 = 0x00;
 	TCCR0 = (1 << WGM01) | (0 << CS02) | (1 << CS01) | (1 << CS00); //CTC, PRES=64
@@ -283,29 +345,6 @@ mainflag.enableADC_Termopila = 0;
 	sei();
 
 	mypid0_set();	//1 vez
-
-
-	int8_t systick_counter0=0;
-
-/*
-////////-----------------------------
-indicatorTimed_setKSysTickTime_ms(300/SYSTICK_MS);
-indicatorTimed_cycle_start();
-
-while (1)
-{
-	if (isr_flag.sysTickMs)
-	{
-		isr_flag.sysTickMs = 0;
-		mainflag.sysTickMs = 1;
-	}
-
-	indicatorTimed_job();
-	mainflag.sysTickMs = 0;
-}
-////////-----------------------------
-
-*/
 	disp7s_clear_all();
 
 	strncpy(str,DIPS7S_MSG_ACIE,BASKET_DISP_MAX_CHARS_PERBASKET);
@@ -315,7 +354,7 @@ while (1)
 	disp7s_update_data_array(str, BASKETRIGHT_DISP_CURSOR_START_X, BASKET_DISP_MAX_CHARS_PERBASKET);
 
 
-	int16_t counter_displayACIER=0;
+
 	while (1)
 	{
 		if (isr_flag.sysTickMs)
@@ -335,7 +374,6 @@ while (1)
 
 		if (main_schedule.bf.display_ACIERInd == 0)
 		{
-			//----------------------
 			if (mainflag.sysTickMs)
 			{
 				if (++counter_displayACIER >= (3000/SYSTICK_MS))    //20ms
@@ -344,138 +382,32 @@ while (1)
 					main_schedule.bf.display_ACIERInd = 1;
 				}
 			}
-
 		}
 		else
 		{
 
+			//------------------------------------------
 			if (temperature_job())
 			{
 				main_schedule.bf.startup_finish_stable_temperature = STARTUP_FINISHED;
-//
-//				if (TCtemperature == MAX6675_THERMOCOUPLED_OPEN)
-//				{
-//					//disp7s_clear_all();
-//					//MAX6675_formatText3dig(TCtemperature, str);
-//					//disp7s_update_data_array(str, BASKETRIGHT_DISP_CURSOR_START_X, BASKET_DISP_MAX_CHARS_PERBASKET);
-//
-//					main_schedule.bf.status_thermocuple = STATUS_THERMOCOUPLE_BAD;
-//
-//					e.sensor[ERROR_IDX_THERMOCOUPLE].code = 1;//ERROR POR NO CONECTADO
-//
-//				}
-//				else
-//				{
-//					if (TCtemperature > 999)//Out Range
-//					{
-//						e.sensor[ERROR_IDX_THERMOCOUPLE].code = 2;//ERROR POR ESTAR FUERA DEL RANGO DE MEDICION
-//						main_schedule.bf.status_thermocuple = STATUS_THERMOCOUPLE_BAD;
-//					}
-//					else
-//					{
-//						e.sensor[ERROR_IDX_THERMOCOUPLE].code = 0;
-//
-//						main_schedule.bf.status_thermocuple = STATUS_THERMOCOUPLE_OK;
-//					}
-//
-//
-//
-//				}
-										e.sensor[ERROR_IDX_THERMOCOUPLE].code = 0;
-
-										main_schedule.bf.status_thermocuple = STATUS_THERMOCOUPLE_OK;
-
+				e.sensor[ERROR_IDX_THERMOCOUPLE].code = 0;
+				//main_schedule.bf.status_thermocuple = STATUS_THERMOCOUPLE_OK;
 			}
-
-	//+++++++++++++++++++++++++
-			//+++++++++++++++++++++++++
-			static int Termopile_counter;
-			static int Termopile_counter2;
-			static int Termpile_error_counter;
-			///////////////////////////
-			if (mainflag.sysTickMs)
-			{
-				if (++Termopile_counter >= 50)//ms
-				{
-					//espera a que acabe...
-					if ( mainflag.enableADC_Temp == 0)//significa que ya termino de leer completo
-					{
-						if (termopila_sm0 == 0)
-						{
-							ADC_set_reference(ADC_REF_INTERNAL_2_56V);
-							ADC_start_conv(ADC_CH_0);
-
-							termopila_sm0++;
-						}
-						else
-						{
-							if (isr_flag.adcReady == 1)
-							{
-								isr_flag.adcReady = 0;
-								termopila_sm0 = 0;
-								//
-								uint8_t adclow = ADCL;
-								uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
-								//
-								Termopile_counter = 0;
-
-								if ( adc16 < (uint16_t)TERMOPILA_ADC_VALUE )
-								{
-									//
-									Termpile_error_counter++;
-								}
-
-
-								if (++Termopile_counter2 >= 10) //cada 500 ms
-								{
-									Termopile_counter2 = 0;
-									//
-									if (Termpile_error_counter >= 10)
-									{
-										//se toma como error
-										main_schedule.bf.status_thermopile = STATUS_THERMOPILE_BAD;
-										e.sensor[ERROR_IDX_THERMOPILE].code = 1;//ERROR
-
-									}
-									else
-									{
-										main_schedule.bf.status_thermopile = STATUS_THERMOPILE_OK;
-										e.sensor[ERROR_IDX_THERMOPILE].code = 0;//NO ERROR
-
-									}
-									Termpile_error_counter = 0;
-								}
-
-							}
-						}
-					}
-				}
-			}
-			if (Termopile_counter < 50)
-			{
-				mainflag.enableADC_Temp = 1; //deja a 1
-			}
-////////////////////////////////////////////////////////////////////////////////////
-
-
+			//
+			       //termopila_error();
 
 			//El highlimit que normalmente este a pullup con el contacto normalmente CERRADO (CORREGIDO FEB 09 2024), y se activara cuando abra el contacto,
 			if (PinRead(PORTRxHIGHLIMIT, PINxHIGHLIMIT) == 1 )
 			{
-				main_schedule.bf.status_highlimit = STATUS_HIGHLIMIT_BAD;
+				//main_schedule.bf.status_highlimit = STATUS_HIGHLIMIT_BAD;
 				e.sensor[ERROR_IDX_HIGHLIMIT].code = 1;//ERROR
-
 			}
 			else
 			{
-				main_schedule.bf.status_highlimit = STATUS_HIGHLIMIT_OK;
+				//main_schedule.bf.status_highlimit = STATUS_HIGHLIMIT_OK;
 				e.sensor[ERROR_IDX_HIGHLIMIT].code = 0;//NO ERROR
 			}
-
-
-	//+++++++++++++++++++++++++
-
-			//----------------------
+			//------------------------------------------
 			if (mainflag.sysTickMs)
 			{
 				if (++counter0 == (20/SYSTICK_MS))    //20ms
@@ -502,13 +434,14 @@ while (1)
 						{
 							/* ON*/
 							/* forzar en sacar el nivel del PWM para el primer periodo, ya que T = 10s*/
-							int16_t error = mypid0_adjust_kei_windup(); /* dejar preparado para job()*/
+
+							int16_t error = mypid0_adjust_kei_windup(); // dejar preparado para job()
 							pid_find_ktop_ms(&mypid0, error);
 							pid_pwm_stablish_levelpin(&mypid0);//set PWM por primera vez//tener de inmediato el valor de ktop_ms
-
 							//
 							main_schedule.bf.switch_status_onoff = 1;
-	//						PinTo1(PORTWxCONTROLLER_ONOFF, PINxCONTROLLER_ONOFF);
+							//mainflag.ADCrecurso = ADC_LIBRE;
+
 						}
 						else
 						{
@@ -522,6 +455,16 @@ while (1)
 							e = e_reset;
 							indicatorTimed_stop();
 							//
+							//added:
+							termopila = termopilaReset;
+							//mainflag.ADCrecurso = ADC_LIBRE;
+							//como el ISR sigue corriendo, si existiera una interrupcion
+							//por ADC corriendo... igual el flag se limpia por hardware
+							//no hay necesidad de limpiarlo en este punto
+							//el flag de habilitacion para leer la temperatura se restituye por la parte
+							//del prorama que compara si el Termopile_counter < 50
+
+							//
 	//						PinTo0(PORTWxCONTROLLER_ONOFF, PINxCONTROLLER_ONOFF);
 						}
 					}
@@ -534,84 +477,15 @@ while (1)
 			{
 				if (main_schedule.bf.switch_status_onoff == 1)
 				{
-
-					//+++++++++++++++++++++++++++++++++++++++++++++++++
-					//+++++++++++++++++++++++++++++++++++++++++++++++++
-					/*
-					if (error.sm0 == 0)
-					{
-						if (error.table[error.e] > 0)//hay error
-						{
-							//[Err  text]
-							disp7s_clear_all();
-							strncpy(str,DIPS7S_MSG_ERROR,BASKET_DISP_MAX_CHARS_PERBASKET);
-							disp7s_update_data_array(str, BASKETLEFT_DISP_CURSOR_START_X, BASKET_DISP_MAX_CHARS_PERBASKET);
-
-							if (error.e == ERROR_IDX_THERMOCOUPLE)
-							{
-								strncpy(str,DIPS7S_MSG_THERMOCOUPLE_NC,BASKET_DISP_MAX_CHARS_PERBASKET);
-							}
-							else if (error.e == ERROR_IDX_THERMOPILE)
-							{
-								strncpy(str,DIPS7S_MSG_THERMOPILE,BASKET_DISP_MAX_CHARS_PERBASKET);
-							}
-							else if (error.e == ERROR_IDX_HIGHLIMIT)
-							{
-								strncpy(str,DIPS7S_MSG_HIGHLIMIT,BASKET_DISP_MAX_CHARS_PERBASKET);
-							}
-
-							disp7s_update_data_array(str, BASKETRIGHT_DISP_CURSOR_START_X, BASKET_DISP_MAX_CHARS_PERBASKET);
+					if (error_job() == 0)
 
 
-							error.sm0++;
-							error.timer = 0x00000;
-							//
-							indicatorTimed_setKSysTickTime_ms(300/SYSTICK_MS);
-							indicatorTimed_cycle_start();
-							//
-							pid_pwm_set_pin(&mypid0, 0);
-						}
-						else
-						{
-							if (++error.e >= ERROR_SIZE)//avanza a ver el siguiente error
-								{error.e = 0x00;}
-						}
-					}
-					else if (error.sm0 == 1)
-					{
-						if (error.table[error.e] == 0)//ya no hay error
-						{
-							error.sm0 = 0;
-							//
-							indicatorTimed_stop();
-						}
-						else
-						{
-							//timing
-							if (mainflag.sysTickMs)
-							{
-								if (++error.timer >= (1000/SYSTICK_MS))
-								{
-									if (++error.e >= ERROR_SIZE)//avanza a ver el siguiente error
-										{error.e = 0x00;}
-
-									error.sm0 = 0x00;	//evalua nuevamente
-								}
-							}
-							//
-						}
-					}
-					*/
-					//+++++++++++++++++++++++++++++++++++++++++++++++++
-					//+++++++++++++++++++++++++++++++++++++++++++++++++
-					error_job();
-
-					if ((main_schedule.bf.startup_finish_stable_temperature == STARTUP_FINISHED) &&
-							(main_schedule.bf.status_thermocuple == STATUS_THERMOCOUPLE_OK) &&
-							(main_schedule.bf.status_thermopile == STATUS_THERMOPILE_OK) &&
-							(main_schedule.bf.status_highlimit == STATUS_HIGHLIMIT_OK)
-							)
-
+//					if ((main_schedule.bf.startup_finish_stable_temperature == STARTUP_FINISHED) &&
+//							(main_schedule.bf.status_thermocuple == STATUS_THERMOCOUPLE_OK) &&
+//							(main_schedule.bf.status_thermopile == STATUS_THERMOPILE_OK) &&
+//							(main_schedule.bf.status_highlimit == STATUS_HIGHLIMIT_OK)
+//							)
+//					if (1)
 					{
 						//the machine can operate properly
 						if (main_schedule.sm0 == 0)

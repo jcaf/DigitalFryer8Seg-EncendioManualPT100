@@ -38,6 +38,7 @@
 extern struct _error e;
 extern struct _error e_reset;
 
-void error_job(void);
+//void error_job(void);
+int8_t error_job(void);
 
 #endif /* ERROR_ERROR_H_ */

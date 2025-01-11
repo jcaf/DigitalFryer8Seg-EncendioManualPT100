@@ -20,7 +20,7 @@ struct _error e_reset;
 
 unsigned char disp7s_data_array_saved[DISP7S_TOTAL_NUMMAX];
 
-void error_job(void)
+int8_t error_job(void)
 {
 	int8_t counter;
 	unsigned char str[10];//cambiar a char_arr
@@ -72,11 +72,14 @@ void error_job(void)
 			{
 				disp7s_data_array[x] = disp7s_data_array_saved[x];
 			}
-
+			//added
+			cli();
+			WDTCR=0x18;
+			WDTCR=0x08;
+			while(1);
+			//
 		}
-
 	}
-
 	//+++++++++++++++++++++++++++++++++++++++++
 	//+++++++++++++++++++++++++++++++++++++++++
 
@@ -88,6 +91,7 @@ void error_job(void)
 			disp7s_clear_all();
 			strncpy(str,DIPS7S_MSG_ERROR,BASKET_DISP_MAX_CHARS_PERBASKET);
 			disp7s_update_data_array(str, BASKETLEFT_DISP_CURSOR_START_X, BASKET_DISP_MAX_CHARS_PERBASKET);
+
 			if (e.idx == ERROR_IDX_THERMOCOUPLE)
 			{
 				strncpy(str,DIPS7S_MSG_THERMOCOUPLE_NC,BASKET_DISP_MAX_CHARS_PERBASKET);
@@ -144,6 +148,5 @@ void error_job(void)
 		}
 
 	}
-
-
+	return e.f.indicator;
 }
