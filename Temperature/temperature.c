@@ -311,17 +311,21 @@ int8_t AdqAccSamples(void)
 		{
 			mainflag.ADCrecurso = ADC_OCUPADO;
 
-			ADC_set_reference(ADC_REF_AVCC);
-			ADC_start_conv(ADC_CH_2);
+//			ADC_set_reference(ADC_REF_AVCC);
+//			ADC_start_conv(ADC_CH_2);
 			//
 			sm0++;
+//usart_println_string("deja convr");
+//__delay_ms(1);
+
 		}
 	}
 	else
 	{
-		if (isr_flag.adcReady == 1)
+		if (1)//if (isr_flag.adcReady == 1)
 		{
-			isr_flag.adcReady = 0;
+			//isr_flag.adcReady = 0;
+
 			mainflag.ADCrecurso = ADC_LIBRE;
 			sm0 = 0;
 			//
@@ -330,9 +334,14 @@ int8_t AdqAccSamples(void)
 
 			smoothVector[job_captureTemperature.counter0] = adc16;
 
+//usart_println_string("LEE ADCH ACHL");
+
+
 			if (++job_captureTemperature.counter0 >= TEMPERATURE_SMOOTHALG_MAXSIZE)
 			{
 				job_captureTemperature.counter0 = 0x00;
+//usart_println_string("job_captureT");
+
 				return 1;
 			}
 
@@ -348,10 +357,13 @@ int8_t MAX6675_smoothAlg_nonblock_job(int16_t *TCtemperature)
 
 	if (smoothAlg_nonblock(&smoothAlg_temp, smoothVector, TEMPERATURE_SMOOTHALG_MAXSIZE, &smoothAnswer))
 	{
+//usart_println_string("smoothAlg_nonblock");
+
 		if (smoothAnswer > 0.0f)
 		{
 			float Rtd = (smoothAnswer*0.097948f)+ INA326_R_OPPOSITE;
-			Rtd *= 1.011f;//factor de correccion
+			//Rtd *= 1.011f;//factor de correccion
+			Rtd *= 1.005f;//factor de correccion
 
 			*TCtemperature = (int)T_rtd(Rtd);
 		}
@@ -371,13 +383,18 @@ para poder leer al inicio del programa, ojo xq se necesita el flag de systick
 
 int8_t temperature_job(void)
 {
+	char bufferTC[20];
+
 	int8_t codret = 0;
 	static int8_t sm0;
+
+//	usart_println_string("+++");
 
 	if (sm0 == 0)
 	{
 		if (AdqAccSamples() )
 		{
+
 			sm0++;
 		}
 	}
@@ -388,6 +405,11 @@ int8_t temperature_job(void)
 			if (pgrmode.bf.unitTemperature == FAHRENHEIT)
 			{
 				TCtemperature = (TCtemperature*1.8f) + 32;//TCtemperature = (TCtemperature*(9.0f/5)) + 32;
+
+//				itoa(TCtemperature,bufferTC,10);
+//usart_print_string("T:");
+//usart_println_string(bufferTC);
+
 			}
 			sm0 = 0x00;
 

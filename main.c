@@ -1,5 +1,5 @@
 /*
- Atmega32
+ Atmega32 version corregida del ADC
  ----------------------------------------
  1)    http://www.engbedded.com/fusecalc/
  lock bits:
@@ -54,6 +54,8 @@
 #include "disp7s_applevel.h"
 #include "adc/adc.h"
 #include "error/error.h"
+#include "usart/usart.h"
+#include "serial/serial.h"
 
 volatile struct _isr_flag isr_flag;
 struct _mainflag mainflag;
@@ -106,7 +108,9 @@ void mypid0_set(void)
 	 * +50 es el error SP-PV, a partir de esa diferencia queremos el controlador
 	 * empieza a regular entre 10..0 de manera proporcional
 	 *  */
-	mypid0.algo.kp = 10.0f / 25;// 5/6/2024 la kte se dobla
+	//mypid0.algo.kp = 10.0f / 25;// 5/6/2024 la kte se dobla
+	mypid0.algo.kp = 10.0f / 12;// 5/6/2024 la kte se dobla
+
 	//pid.algo.kp = 1.0f/5;
 
 	mypid0.algo.ki = 1.0f/10;
@@ -290,6 +294,10 @@ int main(void)
 	int8_t systick_counter0=0;
 	int16_t counter_displayACIER=0;
 
+
+
+
+
 	disp7s_init();//new
 
 	eeprom_read_block((struct _Tcoccion *)&tmprture_coccion , (struct _Tcoccion *)&TMPRTURE_COCCION, sizeof(struct _Tcoccion) );
@@ -316,16 +324,17 @@ int main(void)
 	PinTo0(PORTWxSOL_GAS_QUEMADOR, PINxSOL_GAS_QUEMADOR);
 	ConfigOutputPin(CONFIGIOxSOL_GAS_QUEMADOR, PINxSOL_GAS_QUEMADOR);
 
-	ADC_init(ADC_MODE_AUTOTRIGGER_DISABLED, ADC_REF_AVCC, ADC_PRESCALER_128);
+	//ADC_init(ADC_MODE_AUTOTRIGGER_DISABLED, ADC_REF_AVCC, ADC_PRESCALER_128);
+	ADC_init(ADC_MODE_AUTOTRIGGER_FREE_RUNNING, ADC_REF_AVCC, ADC_PRESCALER_128);
+
 	ADC_set_channel(ADC_CH_2);
 
 	BitTo1(ADCSRA, ADSC);
-	while(!(ADCSRA & (1 << ADIF)))//Esperar por 1 conversion
-		{;}
-	ADCSRA |= (1 << ADIF); //reset as required
-
+//	while(!(ADCSRA & (1 << ADIF)))//Esperar por 1 conversion
+//		{;}
+//	ADCSRA |= (1 << ADIF); //reset as required
 	//activar INTERRUPCIONES
-	BitTo1(ADCSRA,ADIE);//
+//	BitTo1(ADCSRA,ADIE);//
 
 	mainflag.ADCrecurso = ADC_LIBRE;
 
@@ -353,7 +362,13 @@ int main(void)
 	strncpy(str,DIPS7S_MSG_rInd,BASKET_DISP_MAX_CHARS_PERBASKET);
 	disp7s_update_data_array(str, BASKETRIGHT_DISP_CURSOR_START_X, BASKET_DISP_MAX_CHARS_PERBASKET);
 
+	//USART_Init(416);
+//	USART_Init(3); //depuracion a 250KBPS
 
+//	while (1)
+//	{
+//		usart_println_string("abc");
+//	}
 
 	while (1)
 	{
@@ -387,11 +402,17 @@ int main(void)
 		{
 
 			//------------------------------------------
+			//usart_println_string("ALT");
+
 			if (temperature_job())
 			{
+				//usart_println_string("tj");
+
 				main_schedule.bf.startup_finish_stable_temperature = STARTUP_FINISHED;
 				e.sensor[ERROR_IDX_THERMOCOUPLE].code = 0;
 				//main_schedule.bf.status_thermocuple = STATUS_THERMOCOUPLE_OK;
+
+
 			}
 			//
 			       //termopila_error();
