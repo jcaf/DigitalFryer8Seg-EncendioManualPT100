@@ -17,6 +17,9 @@
 
 int TCtemperature;// = 30;
 
+/*
+ * LM334-3 + 68 OHM PRECISION comprados en HIFI
+ */
 #define INA326_G 49.9f
 #define REF200_I 0.001f
 #define GxI 0.05f//(INA326_G*REF200_I)
@@ -404,7 +407,7 @@ int8_t temperature_job(void)
 		{
 			if (pgrmode.bf.unitTemperature == FAHRENHEIT)
 			{
-				TCtemperature = (TCtemperature*1.8f) + 32;//TCtemperature = (TCtemperature*(9.0f/5)) + 32;
+//				TCtemperature = (TCtemperature*1.8f) + 32;//TCtemperature = (TCtemperature*(9.0f/5)) + 32;
 
 //				itoa(TCtemperature,bufferTC,10);
 //usart_print_string("T:");

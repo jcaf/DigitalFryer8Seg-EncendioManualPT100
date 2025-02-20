@@ -207,7 +207,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x0000000000000000     0x4dd8
+.text           0x0000000000000000     0x4d60
  *(.vectors)
  .vectors       0x0000000000000000       0x54 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5/crtatmega32.o
                 0x0000000000000000                __vector_default
@@ -585,319 +585,319 @@ END GROUP
                 0x00000000000024a6      0x264 ./Temperature/temperature.o
                 0x00000000000024a6                MAX6675_smoothAlg_nonblock_job
  .text.temperature_job
-                0x000000000000270a      0x360 ./Temperature/temperature.o
+                0x000000000000270a      0x2e8 ./Temperature/temperature.o
                 0x000000000000270a                temperature_job
  .text.InitSPI_MASTER
-                0x0000000000002a6a        0xc ./SPI/SPI_01.o
-                0x0000000000002a6a                InitSPI_MASTER
+                0x00000000000029f2        0xc ./SPI/SPI_01.o
+                0x00000000000029f2                InitSPI_MASTER
  .text.SPI_MSTR_ExchangeData
-                0x0000000000002a76        0xa ./SPI/SPI_01.o
-                0x0000000000002a76                SPI_MSTR_ExchangeData
+                0x00000000000029fe        0xa ./SPI/SPI_01.o
+                0x00000000000029fe                SPI_MSTR_ExchangeData
  .text.MAX6675_getFloatTmprCelsius
-                0x0000000000002a80       0xb8 ./MAX6675/MAX6675.o
-                0x0000000000002a80                MAX6675_getFloatTmprCelsius
+                0x0000000000002a08       0xb8 ./MAX6675/MAX6675.o
+                0x0000000000002a08                MAX6675_getFloatTmprCelsius
  .text.MAX6675_get12bitsTemp
-                0x0000000000002b38       0x58 ./MAX6675/MAX6675.o
-                0x0000000000002b38                MAX6675_get12bitsTemp
+                0x0000000000002ac0       0x58 ./MAX6675/MAX6675.o
+                0x0000000000002ac0                MAX6675_get12bitsTemp
  .text.disp7s_setup
-                0x0000000000002b90       0x1e ./Display7S/display7s.o
-                0x0000000000002b90                disp7s_setup
+                0x0000000000002b18       0x1e ./Display7S/display7s.o
+                0x0000000000002b18                disp7s_setup
  .text.disp7s_job
-                0x0000000000002bae       0x8e ./Display7S/display7s.o
-                0x0000000000002bae                disp7s_job
+                0x0000000000002b36       0x8e ./Display7S/display7s.o
+                0x0000000000002b36                disp7s_job
  .text.disp7s_fix_upsidedown_display
-                0x0000000000002c3c       0x28 ./disp7s_applevel.o
-                0x0000000000002c3c                disp7s_fix_upsidedown_display
+                0x0000000000002bc4       0x28 ./disp7s_applevel.o
+                0x0000000000002bc4                disp7s_fix_upsidedown_display
  .text.disp7s_fix_all_upsidedown_display
-                0x0000000000002c64       0x4e ./disp7s_applevel.o
-                0x0000000000002c64                disp7s_fix_all_upsidedown_display
+                0x0000000000002bec       0x4e ./disp7s_applevel.o
+                0x0000000000002bec                disp7s_fix_all_upsidedown_display
  .text.disp7s_blank_displays
-                0x0000000000002cb2       0x1e ./disp7s_applevel.o
-                0x0000000000002cb2                disp7s_blank_displays
+                0x0000000000002c3a       0x1e ./disp7s_applevel.o
+                0x0000000000002c3a                disp7s_blank_displays
  .text.disp7s_update_data_array
-                0x0000000000002cd0       0x20 ./disp7s_applevel.o
-                0x0000000000002cd0                disp7s_update_data_array
+                0x0000000000002c58       0x20 ./disp7s_applevel.o
+                0x0000000000002c58                disp7s_update_data_array
  .text.disp7s_save_data_array
-                0x0000000000002cf0       0x68 ./disp7s_applevel.o
-                0x0000000000002cf0                disp7s_save_data_array
+                0x0000000000002c78       0x68 ./disp7s_applevel.o
+                0x0000000000002c78                disp7s_save_data_array
  .text.disp7s_clear_all
-                0x0000000000002d58       0x10 ./disp7s_applevel.o
-                0x0000000000002d58                disp7s_clear_all
+                0x0000000000002ce0       0x10 ./disp7s_applevel.o
+                0x0000000000002ce0                disp7s_clear_all
  .text.integer_to_arraybcd_msb_lsb_paddingleft_blank
-                0x0000000000002d68      0x196 ./disp7s_applevel.o
-                0x0000000000002d68                integer_to_arraybcd_msb_lsb_paddingleft_blank
+                0x0000000000002cf0      0x196 ./disp7s_applevel.o
+                0x0000000000002cf0                integer_to_arraybcd_msb_lsb_paddingleft_blank
  .text.integer_to_arraybcd_msb_lsb_paddingleft_zeroes
-                0x0000000000002efe      0x194 ./disp7s_applevel.o
-                0x0000000000002efe                integer_to_arraybcd_msb_lsb_paddingleft_zeroes
+                0x0000000000002e86      0x194 ./disp7s_applevel.o
+                0x0000000000002e86                integer_to_arraybcd_msb_lsb_paddingleft_zeroes
  .text.disp7s_decimalpoint_on
-                0x0000000000003092        0xa ./disp7s_applevel.o
-                0x0000000000003092                disp7s_decimalpoint_on
+                0x000000000000301a        0xa ./disp7s_applevel.o
+                0x000000000000301a                disp7s_decimalpoint_on
  .text.disp7s_decimalpoint_off
-                0x000000000000309c        0xa ./disp7s_applevel.o
-                0x000000000000309c                disp7s_decimalpoint_off
+                0x0000000000003024        0xa ./disp7s_applevel.o
+                0x0000000000003024                disp7s_decimalpoint_off
  .text.disp7s_mux0_off
-                0x00000000000030a6        0x4 ./display7s_setup.o
+                0x000000000000302e        0x4 ./display7s_setup.o
  .text.disp7s_mux0_on
-                0x00000000000030aa        0x4 ./display7s_setup.o
+                0x0000000000003032        0x4 ./display7s_setup.o
  .text.disp7s_mux1_off
-                0x00000000000030ae        0x4 ./display7s_setup.o
+                0x0000000000003036        0x4 ./display7s_setup.o
  .text.disp7s_mux1_on
-                0x00000000000030b2        0x4 ./display7s_setup.o
+                0x000000000000303a        0x4 ./display7s_setup.o
  .text.disp7s_mux2_off
-                0x00000000000030b6        0x4 ./display7s_setup.o
+                0x000000000000303e        0x4 ./display7s_setup.o
  .text.disp7s_mux2_on
-                0x00000000000030ba        0x4 ./display7s_setup.o
+                0x0000000000003042        0x4 ./display7s_setup.o
  .text.disp7s_mux3_off
-                0x00000000000030be        0x4 ./display7s_setup.o
+                0x0000000000003046        0x4 ./display7s_setup.o
  .text.disp7s_mux3_on
-                0x00000000000030c2        0x4 ./display7s_setup.o
+                0x000000000000304a        0x4 ./display7s_setup.o
  .text.disp7s_mux4_off
-                0x00000000000030c6        0x4 ./display7s_setup.o
+                0x000000000000304e        0x4 ./display7s_setup.o
  .text.disp7s_mux4_on
-                0x00000000000030ca        0x4 ./display7s_setup.o
+                0x0000000000003052        0x4 ./display7s_setup.o
  .text.disp7s_mux5_off
-                0x00000000000030ce        0x4 ./display7s_setup.o
+                0x0000000000003056        0x4 ./display7s_setup.o
  .text.disp7s_mux5_on
-                0x00000000000030d2        0x4 ./display7s_setup.o
+                0x000000000000305a        0x4 ./display7s_setup.o
  .text.disp7s_mux6_off
-                0x00000000000030d6        0x4 ./display7s_setup.o
+                0x000000000000305e        0x4 ./display7s_setup.o
  .text.disp7s_mux6_on
-                0x00000000000030da        0x4 ./display7s_setup.o
+                0x0000000000003062        0x4 ./display7s_setup.o
  .text.disp7s_mux7_off
-                0x00000000000030de        0x4 ./display7s_setup.o
+                0x0000000000003066        0x4 ./display7s_setup.o
  .text.disp7s_mux7_on
-                0x00000000000030e2        0x4 ./display7s_setup.o
+                0x000000000000306a        0x4 ./display7s_setup.o
  .text.disp7s_init
-                0x00000000000030e6       0x46 ./display7s_setup.o
-                0x00000000000030e6                disp7s_init
+                0x000000000000306e       0x46 ./display7s_setup.o
+                0x000000000000306e                disp7s_init
  .text.mypid0_set
-                0x000000000000312c       0x6a ./main.o
-                0x000000000000312c                mypid0_set
+                0x00000000000030b4       0x6a ./main.o
+                0x00000000000030b4                mypid0_set
  .text.mypid0_adjust_kei_windup
-                0x0000000000003196       0x2c ./main.o
-                0x0000000000003196                mypid0_adjust_kei_windup
+                0x000000000000311e       0x2c ./main.o
+                0x000000000000311e                mypid0_adjust_kei_windup
  .text.kbmode_default
-                0x00000000000031c2       0xbc ./main.o
-                0x00000000000031c2                kbmode_default
+                0x000000000000314a       0xbc ./main.o
+                0x000000000000314a                kbmode_default
  .text.kbmode_2basket_set_default
-                0x000000000000327e       0x10 ./main.o
-                0x000000000000327e                kbmode_2basket_set_default
+                0x0000000000003206       0x10 ./main.o
+                0x0000000000003206                kbmode_2basket_set_default
  .text.fryer_init
-                0x000000000000328e       0x34 ./main.o
-                0x000000000000328e                fryer_init
+                0x0000000000003216       0x34 ./main.o
+                0x0000000000003216                fryer_init
  .text.termopila_error
-                0x00000000000032c2      0x114 ./main.o
-                0x00000000000032c2                termopila_error
+                0x000000000000324a      0x114 ./main.o
+                0x000000000000324a                termopila_error
  .text.startup.main
-                0x00000000000033d6      0x4ee ./main.o
-                0x00000000000033d6                main
+                0x000000000000335e      0x4ee ./main.o
+                0x000000000000335e                main
  .text.__vector_10
-                0x00000000000038c4       0x18 ./main.o
-                0x00000000000038c4                __vector_10
+                0x000000000000384c       0x18 ./main.o
+                0x000000000000384c                __vector_10
  .text.__vector_16
-                0x00000000000038dc       0x18 ./main.o
-                0x00000000000038dc                __vector_16
+                0x0000000000003864       0x18 ./main.o
+                0x0000000000003864                __vector_16
  .text.build_cookCycle_string
-                0x00000000000038f4       0x84 ./psmode_operative.o
-                0x00000000000038f4                build_cookCycle_string
+                0x000000000000387c       0x84 ./psmode_operative.o
+                0x000000000000387c                build_cookCycle_string
  .text.cookCycle_hotUpdate
-                0x0000000000003978       0xec ./psmode_operative.o
-                0x0000000000003978                cookCycle_hotUpdate
+                0x0000000000003900       0xec ./psmode_operative.o
+                0x0000000000003900                cookCycle_hotUpdate
  .text.psmode_operative_init
-                0x0000000000003a64      0x160 ./psmode_operative.o
-                0x0000000000003a64                psmode_operative_init
- .text.p1       0x0000000000003bc4      0x55e ./psmode_operative.o
-                0x0000000000003bc4                p1
- .text.p2       0x0000000000004122      0x16c ./psmode_operative.o
-                0x0000000000004122                p2
- .text.p3       0x000000000000428e      0x176 ./psmode_operative.o
-                0x000000000000428e                p3
+                0x00000000000039ec      0x160 ./psmode_operative.o
+                0x00000000000039ec                psmode_operative_init
+ .text.p1       0x0000000000003b4c      0x55e ./psmode_operative.o
+                0x0000000000003b4c                p1
+ .text.p2       0x00000000000040aa      0x16c ./psmode_operative.o
+                0x00000000000040aa                p2
+ .text.p3       0x0000000000004216      0x176 ./psmode_operative.o
+                0x0000000000004216                p3
  .text.psmode_operative
-                0x0000000000004404       0x70 ./psmode_operative.o
-                0x0000000000004404                psmode_operative
+                0x000000000000438c       0x70 ./psmode_operative.o
+                0x000000000000438c                psmode_operative
  .text.psmode_program
-                0x0000000000004474      0x2a8 ./psmode_program.o
-                0x0000000000004474                psmode_program
+                0x00000000000043fc      0x2a8 ./psmode_program.o
+                0x00000000000043fc                psmode_program
  .text.psmode_viewTemp
-                0x000000000000471c       0xf6 ./psmode_viewTemp.o
-                0x000000000000471c                psmode_viewTemp
+                0x00000000000046a4       0xf6 ./psmode_viewTemp.o
+                0x00000000000046a4                psmode_viewTemp
  .text.libgcc.mul
-                0x0000000000004812        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_divmodsi4.o)
+                0x000000000000479a        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_divmodsi4.o)
  .text.libgcc.div
-                0x0000000000004812       0x2e c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_divmodsi4.o)
-                0x0000000000004812                __divmodsi4
- .text.libgcc   0x0000000000004840        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_divmodsi4.o)
+                0x000000000000479a       0x2e c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_divmodsi4.o)
+                0x000000000000479a                __divmodsi4
+ .text.libgcc   0x00000000000047c8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_divmodsi4.o)
  .text.libgcc.prologue
-                0x0000000000004840        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_divmodsi4.o)
+                0x00000000000047c8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_divmodsi4.o)
  .text.libgcc.builtins
-                0x0000000000004840        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_divmodsi4.o)
+                0x00000000000047c8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_divmodsi4.o)
  .text.libgcc.fmul
-                0x0000000000004840        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_divmodsi4.o)
+                0x00000000000047c8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_divmodsi4.o)
  .text.libgcc.fixed
-                0x0000000000004840        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_divmodsi4.o)
+                0x00000000000047c8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_divmodsi4.o)
  .text.libgcc.mul
-                0x0000000000004840        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_negsi2.o)
+                0x00000000000047c8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_negsi2.o)
  .text.libgcc.div
-                0x0000000000004840       0x10 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_negsi2.o)
-                0x0000000000004840                __negsi2
- .text.libgcc   0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_negsi2.o)
+                0x00000000000047c8       0x10 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_negsi2.o)
+                0x00000000000047c8                __negsi2
+ .text.libgcc   0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_negsi2.o)
  .text.libgcc.prologue
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_negsi2.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_negsi2.o)
  .text.libgcc.builtins
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_negsi2.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_negsi2.o)
  .text.libgcc.fmul
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_negsi2.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_negsi2.o)
  .text.libgcc.fixed
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_negsi2.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_negsi2.o)
  .text.libgcc.mul
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
  .text.libgcc.div
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
- .text.libgcc   0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
+ .text.libgcc   0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
  .text.libgcc.prologue
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
  .text.libgcc.builtins
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
  .text.libgcc.fmul
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
  .text.libgcc.fixed
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
  .text.libgcc.mul
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_copy_data.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_copy_data.o)
  .text.libgcc.div
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_copy_data.o)
- .text.libgcc   0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_copy_data.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_copy_data.o)
+ .text.libgcc   0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_copy_data.o)
  .text.libgcc.prologue
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_copy_data.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_copy_data.o)
  .text.libgcc.builtins
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_copy_data.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_copy_data.o)
  .text.libgcc.fmul
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_copy_data.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_copy_data.o)
  .text.libgcc.fixed
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_copy_data.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_copy_data.o)
  .text.libgcc.mul
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_clear_bss.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_clear_bss.o)
  .text.libgcc.div
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_clear_bss.o)
- .text.libgcc   0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_clear_bss.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_clear_bss.o)
+ .text.libgcc   0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_clear_bss.o)
  .text.libgcc.prologue
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_clear_bss.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_clear_bss.o)
  .text.libgcc.builtins
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_clear_bss.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_clear_bss.o)
  .text.libgcc.fmul
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_clear_bss.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_clear_bss.o)
  .text.libgcc.fixed
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_clear_bss.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_clear_bss.o)
  .text.libgcc.mul
-                0x0000000000004850        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_udivmodsi4.o)
+                0x00000000000047d8        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_udivmodsi4.o)
  .text.libgcc.div
-                0x0000000000004850       0x44 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_udivmodsi4.o)
-                0x0000000000004850                __udivmodsi4
- .text.libgcc   0x0000000000004894        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_udivmodsi4.o)
+                0x00000000000047d8       0x44 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_udivmodsi4.o)
+                0x00000000000047d8                __udivmodsi4
+ .text.libgcc   0x000000000000481c        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_udivmodsi4.o)
  .text.libgcc.prologue
-                0x0000000000004894        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_udivmodsi4.o)
+                0x000000000000481c        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_udivmodsi4.o)
  .text.libgcc.builtins
-                0x0000000000004894        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_udivmodsi4.o)
+                0x000000000000481c        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_udivmodsi4.o)
  .text.libgcc.fmul
-                0x0000000000004894        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_udivmodsi4.o)
+                0x000000000000481c        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_udivmodsi4.o)
  .text.libgcc.fixed
-                0x0000000000004894        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_udivmodsi4.o)
+                0x000000000000481c        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_udivmodsi4.o)
  .text.avr-libc.fplib
-                0x0000000000004894        0xe c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(addsf3.o)
-                0x0000000000004894                __subsf3
-                0x0000000000004896                __addsf3
+                0x000000000000481c        0xe c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(addsf3.o)
+                0x000000000000481c                __subsf3
+                0x000000000000481e                __addsf3
  .text.avr-libc.fplib
-                0x00000000000048a2       0xcc c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(addsf3x.o)
-                0x00000000000048c4                __addsf3x
+                0x000000000000482a       0xcc c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(addsf3x.o)
+                0x000000000000484c                __addsf3x
  .text.avr-libc.fplib
-                0x000000000000496e        0xa c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(cmpsf2.o)
-                0x000000000000496e                __nesf2
-                0x000000000000496e                __eqsf2
-                0x000000000000496e                __cmpsf2
-                0x000000000000496e                __ltsf2
-                0x000000000000496e                __lesf2
+                0x00000000000048f6        0xa c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(cmpsf2.o)
+                0x00000000000048f6                __nesf2
+                0x00000000000048f6                __eqsf2
+                0x00000000000048f6                __cmpsf2
+                0x00000000000048f6                __ltsf2
+                0x00000000000048f6                __lesf2
  .text.avr-libc.fplib
-                0x0000000000004978        0x8 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(divsf3.o)
-                0x0000000000004978                __divsf3
+                0x0000000000004900        0x8 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(divsf3.o)
+                0x0000000000004900                __divsf3
  .text.avr-libc.fplib
-                0x0000000000004980       0xdc c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(divsf3x.o)
-                0x00000000000049a0                __divsf3x
-                0x00000000000049a6                __divsf3_pse
+                0x0000000000004908       0xdc c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(divsf3x.o)
+                0x0000000000004928                __divsf3x
+                0x000000000000492e                __divsf3_pse
  .text.avr-libc.fplib
-                0x0000000000004a5c        0xe c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fixsfsi.o)
-                0x0000000000004a5c                __fixsfsi
+                0x00000000000049e4        0xe c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fixsfsi.o)
+                0x00000000000049e4                __fixsfsi
  .text.avr-libc.fplib
-                0x0000000000004a6a       0x5e c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fixunssfsi.o)
-                0x0000000000004a6a                __fixunssfsi
+                0x00000000000049f2       0x5e c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fixunssfsi.o)
+                0x00000000000049f2                __fixunssfsi
  .text.avr-libc.fplib
-                0x0000000000004ac8       0x7a c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(floatsisf.o)
-                0x0000000000004ac8                __floatunsisf
-                0x0000000000004acc                __floatsisf
+                0x0000000000004a50       0x7a c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(floatsisf.o)
+                0x0000000000004a50                __floatunsisf
+                0x0000000000004a54                __floatsisf
  .text.avr-libc.fplib
-                0x0000000000004b42       0x48 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_cmp.o)
-                0x0000000000004b42                __fp_cmp
+                0x0000000000004aca       0x48 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_cmp.o)
+                0x0000000000004aca                __fp_cmp
  .text.avr-libc.fplib
-                0x0000000000004b8a        0xc c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_inf.o)
-                0x0000000000004b8a                __fp_inf
+                0x0000000000004b12        0xc c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_inf.o)
+                0x0000000000004b12                __fp_inf
  .text.avr-libc.fplib
-                0x0000000000004b96        0x6 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_nan.o)
-                0x0000000000004b96                __fp_nan
+                0x0000000000004b1e        0x6 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_nan.o)
+                0x0000000000004b1e                __fp_nan
  .text.avr-libc.fplib
-                0x0000000000004b9c        0xe c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_pscA.o)
-                0x0000000000004b9c                __fp_pscA
+                0x0000000000004b24        0xe c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_pscA.o)
+                0x0000000000004b24                __fp_pscA
  .text.avr-libc.fplib
-                0x0000000000004baa        0xe c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_pscB.o)
-                0x0000000000004baa                __fp_pscB
+                0x0000000000004b32        0xe c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_pscB.o)
+                0x0000000000004b32                __fp_pscB
  .text.avr-libc.fplib
-                0x0000000000004bb8       0x22 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_round.o)
-                0x0000000000004bb8                __fp_round
+                0x0000000000004b40       0x22 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_round.o)
+                0x0000000000004b40                __fp_round
  .text.avr-libc.fplib
-                0x0000000000004bda       0x44 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_split3.o)
-                0x0000000000004bda                __fp_split3
-                0x0000000000004bea                __fp_splitA
+                0x0000000000004b62       0x44 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_split3.o)
+                0x0000000000004b62                __fp_split3
+                0x0000000000004b72                __fp_splitA
  .text.avr-libc.fplib
-                0x0000000000004c1e        0xe c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_zero.o)
-                0x0000000000004c1e                __fp_zero
-                0x0000000000004c20                __fp_szero
+                0x0000000000004ba6        0xe c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(fp_zero.o)
+                0x0000000000004ba6                __fp_zero
+                0x0000000000004ba8                __fp_szero
  .text.avr-libc.fplib
-                0x0000000000004c2c        0xa c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(gesf2.o)
-                0x0000000000004c2c                __gesf2
-                0x0000000000004c2c                __gtsf2
+                0x0000000000004bb4        0xa c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(gesf2.o)
+                0x0000000000004bb4                __gesf2
+                0x0000000000004bb4                __gtsf2
  .text.avr-libc.fplib
-                0x0000000000004c36        0x8 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(mulsf3.o)
-                0x0000000000004c36                __mulsf3
+                0x0000000000004bbe        0x8 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(mulsf3.o)
+                0x0000000000004bbe                __mulsf3
  .text.avr-libc.fplib
-                0x0000000000004c3e       0xd2 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(mulsf3x.o)
-                0x0000000000004c5c                __mulsf3x
-                0x0000000000004c62                __mulsf3_pse
+                0x0000000000004bc6       0xd2 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libm.a(mulsf3x.o)
+                0x0000000000004be4                __mulsf3x
+                0x0000000000004bea                __mulsf3_pse
  .text.avr-libc
-                0x0000000000004d10       0x24 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libc.a(memmove.o)
-                0x0000000000004d10                memmove
+                0x0000000000004c98       0x24 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libc.a(memmove.o)
+                0x0000000000004c98                memmove
  .text.avr-libc
-                0x0000000000004d34        0xe c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libc.a(memset.o)
-                0x0000000000004d34                memset
+                0x0000000000004cbc        0xe c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libc.a(memset.o)
+                0x0000000000004cbc                memset
  .text.avr-libc
-                0x0000000000004d42       0x1e c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libc.a(strncpy.o)
-                0x0000000000004d42                strncpy
+                0x0000000000004cca       0x1e c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libc.a(strncpy.o)
+                0x0000000000004cca                strncpy
  .text.avr-libc
-                0x0000000000004d60       0x12 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libc.a(memcpy.o)
-                0x0000000000004d60                memcpy
+                0x0000000000004ce8       0x12 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libc.a(memcpy.o)
+                0x0000000000004ce8                memcpy
  .text.avr-libc
-                0x0000000000004d72       0x20 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libatmega32.a(eerd_block.o)
-                0x0000000000004d72                eeprom_read_block
-                0x0000000000004d76                eeprom_read_blraw
+                0x0000000000004cfa       0x20 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libatmega32.a(eerd_block.o)
+                0x0000000000004cfa                eeprom_read_block
+                0x0000000000004cfe                eeprom_read_blraw
  .text.avr-libc
-                0x0000000000004d92       0x20 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libatmega32.a(eeupd_block.o)
-                0x0000000000004d92                eeprom_update_block
+                0x0000000000004d1a       0x20 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libatmega32.a(eeupd_block.o)
+                0x0000000000004d1a                eeprom_update_block
  .text.avr-libc
-                0x0000000000004db2       0x22 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libatmega32.a(eeupd_byte.o)
-                0x0000000000004db2                eeprom_update_byte
-                0x0000000000004db4                eeprom_update_r18
-                0x0000000000004dd4                . = ALIGN (0x2)
+                0x0000000000004d3a       0x22 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5\libatmega32.a(eeupd_byte.o)
+                0x0000000000004d3a                eeprom_update_byte
+                0x0000000000004d3c                eeprom_update_r18
+                0x0000000000004d5c                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x0000000000004dd4        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
-                0x0000000000004dd4                _exit
-                0x0000000000004dd4                exit
+ .fini9         0x0000000000004d5c        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
+                0x0000000000004d5c                _exit
+                0x0000000000004d5c                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -916,17 +916,17 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x0000000000004dd4        0x4 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
+ .fini0         0x0000000000004d5c        0x4 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/avr5\libgcc.a(_exit.o)
  *(.fini0)
  *(.hightext)
  *(.hightext*)
  *(.progmemx.*)
-                0x0000000000004dd8                . = ALIGN (0x2)
+                0x0000000000004d60                . = ALIGN (0x2)
  *(.jumptables)
  *(.jumptables*)
-                0x0000000000004dd8                _etext = .
+                0x0000000000004d60                _etext = .
 
-.data           0x0000000000800060      0x4b8 load address 0x0000000000004dd8
+.data           0x0000000000800060      0x4b8 load address 0x0000000000004d60
                 0x0000000000800060                PROVIDE (__data_start = .)
  *(.data)
  .data          0x0000000000800060        0x0 c:/users/nefer/onedrive/documentos/avr-gcc-12.1.0-x64-windows - funciono 2022 en win64-wilfredo/avr-gcc-12.1.0-x64-windows/bin/../lib/gcc/avr/12.1.0/../../../../avr/lib/avr5/crtatmega32.o
@@ -1199,8 +1199,8 @@ END GROUP
                 0x000000000080071a                pgrmode
  *(COMMON)
                 0x000000000080071d                PROVIDE (__bss_end = .)
-                0x0000000000004dd8                __data_load_start = LOADADDR (.data)
-                0x0000000000005290                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x0000000000004d60                __data_load_start = LOADADDR (.data)
+                0x0000000000005218                __data_load_end = (__data_load_start + SIZEOF (.data))
 
 .noinit         0x000000000080071d        0x0
                 [!provide]                        PROVIDE (__noinit_start = .)
