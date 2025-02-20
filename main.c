@@ -294,7 +294,8 @@ int main(void)
 	int8_t systick_counter0=0;
 	int16_t counter_displayACIER=0;
 
-
+	uint16_t temperatura_timer=0;
+	int8_t temperatura_sm0=0;
 
 
 
@@ -404,16 +405,47 @@ int main(void)
 			//------------------------------------------
 			//usart_println_string("ALT");
 
-			if (temperature_job())
+//			if (temperature_job())
+//			{
+//				//usart_println_string("tj");
+//
+//				main_schedule.bf.startup_finish_stable_temperature = STARTUP_FINISHED;
+//				e.sensor[ERROR_IDX_THERMOCOUPLE].code = 0;
+//				//main_schedule.bf.status_thermocuple = STATUS_THERMOCOUPLE_OK;
+//			}
+			//////////////////////////////////////
+			///
+			if (temperatura_sm0 == 0)
 			{
-				//usart_println_string("tj");
-
-				main_schedule.bf.startup_finish_stable_temperature = STARTUP_FINISHED;
-				e.sensor[ERROR_IDX_THERMOCOUPLE].code = 0;
-				//main_schedule.bf.status_thermocuple = STATUS_THERMOCOUPLE_OK;
-
-
+				if (mainflag.sysTickMs)
+				{
+					if (++temperatura_timer >= (600/SYSTICK_MS))    //20ms
+					{
+						temperatura_timer = 0;
+						temperatura_sm0++;
+					}
+				}
 			}
+			else if (temperatura_sm0 == 1)
+			{
+				if (temperature_job())
+				{
+					//usart_println_string("tj");
+
+					main_schedule.bf.startup_finish_stable_temperature = STARTUP_FINISHED;
+					e.sensor[ERROR_IDX_THERMOCOUPLE].code = 0;
+					//main_schedule.bf.status_thermocuple = STATUS_THERMOCOUPLE_OK;
+
+					if (TCtemperature != temperature_filtered_smoothed)
+					{
+						TCtemperature = temperature_filtered_smoothed;
+						//Actualiza TC
+					}
+
+					temperatura_sm0 = 0;
+				}
+			}
+
 			//
 			       //termopila_error();
 

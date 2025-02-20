@@ -298,7 +298,7 @@ void MAX6675_convertIntTmptr2str_wformatPrintComplete(int16_t temper, char *str_
 #endif
 
 
-#define TEMPERATURE_SMOOTHALG_MAXSIZE 30// 8
+#define TEMPERATURE_SMOOTHALG_MAXSIZE 60// 8
 static uint16_t smoothVector[TEMPERATURE_SMOOTHALG_MAXSIZE];
 
 struct _smoothAlg smoothAlg_temp;
@@ -354,7 +354,7 @@ int8_t AdqAccSamples(void)
 }
 /*****************************************************
 *****************************************************/
-int8_t MAX6675_smoothAlg_nonblock_job(int16_t *TCtemperature)
+int8_t MAX6675_smoothAlg_nonblock_job(int16_t *temperature)
 {
 	float smoothAnswer;
 
@@ -368,11 +368,11 @@ int8_t MAX6675_smoothAlg_nonblock_job(int16_t *TCtemperature)
 			//Rtd *= 1.011f;//factor de correccion
 			Rtd *= 1.005f;//factor de correccion
 
-			*TCtemperature = (int)T_rtd(Rtd);
+			*temperature = (int)T_rtd(Rtd);
 		}
 		else
 		{
-			*TCtemperature = 0;
+			*temperature = 0;
 		}
 		return 1;
 	}
@@ -383,6 +383,8 @@ int8_t MAX6675_smoothAlg_nonblock_job(int16_t *TCtemperature)
 tendria que cambiar la temperature_job para saber cuando tiene correctamente la temperatura
 para poder leer al inicio del programa, ojo xq se necesita el flag de systick
 *****************************************************/
+int temperature_filtered_smoothed;
+//int temperature_filtered_smoothed_last;
 
 int8_t temperature_job(void)
 {
@@ -403,11 +405,12 @@ int8_t temperature_job(void)
 	}
 	else
 	{
-		if (MAX6675_smoothAlg_nonblock_job( &TCtemperature ))
+		if (MAX6675_smoothAlg_nonblock_job( &temperature_filtered_smoothed ))
 		{
 			if (pgrmode.bf.unitTemperature == FAHRENHEIT)
 			{
-//				TCtemperature = (TCtemperature*1.8f) + 32;//TCtemperature = (TCtemperature*(9.0f/5)) + 32;
+//				temperature_filtered_smoothed = (temperature_filtered_smoothed*1.8f) + 32;//TCtemperature = (TCtemperature*(9.0f/5)) + 32;
+
 
 //				itoa(TCtemperature,bufferTC,10);
 //usart_print_string("T:");
