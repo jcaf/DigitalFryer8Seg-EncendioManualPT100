@@ -41,7 +41,13 @@ Resolviendo tenemos
 octave:1> 5/(1023*49.9*0.001)
 ans = 0.097948
 
+
+octave:7> 5/(1024*49.9*0.001)
+ans = 0.097852
+
 Rpt100 = [ADCH:ADCL]*(0.097948) + INA326_R_OPPOSITE
+Rpt100 = [ADCH:ADCL]*(0.097852) + INA326_R_OPPOSITE
+
 */
 
 #include <stdio.h>
@@ -304,69 +310,34 @@ static uint16_t smoothVector[TEMPERATURE_SMOOTHALG_MAXSIZE];
 struct _smoothAlg smoothAlg_temp;
 const struct _smoothAlg smoothAlg_reset;
 
-int8_t AdqAccSamples(void)
+static int8_t AdqAccSamples(void)
 {
-	static int sm0;
+	uint8_t adclow = ADCL;
+	uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
 
-	if (sm0 == 0)
+	smoothVector[job_captureTemperature.counter0] = adc16;
+
+	if (++job_captureTemperature.counter0 >= TEMPERATURE_SMOOTHALG_MAXSIZE)
 	{
-		if (mainflag.ADCrecurso == ADC_LIBRE)
-		{
-			mainflag.ADCrecurso = ADC_OCUPADO;
-
-//			ADC_set_reference(ADC_REF_AVCC);
-//			ADC_start_conv(ADC_CH_2);
-			//
-			sm0++;
-//usart_println_string("deja convr");
-//__delay_ms(1);
-
-		}
-	}
-	else
-	{
-		if (1)//if (isr_flag.adcReady == 1)
-		{
-			//isr_flag.adcReady = 0;
-
-			mainflag.ADCrecurso = ADC_LIBRE;
-			sm0 = 0;
-			//
-			uint8_t adclow = ADCL;
-			uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
-
-			smoothVector[job_captureTemperature.counter0] = adc16;
-
-//usart_println_string("LEE ADCH ACHL");
-
-
-			if (++job_captureTemperature.counter0 >= TEMPERATURE_SMOOTHALG_MAXSIZE)
-			{
-				job_captureTemperature.counter0 = 0x00;
-//usart_println_string("job_captureT");
-
-				return 1;
-			}
-
-		}
+		job_captureTemperature.counter0 = 0x00;
+		return 1;
 	}
 	return 0;
 }
-/*****************************************************
-*****************************************************/
-int8_t MAX6675_smoothAlg_nonblock_job(int16_t *temperature)
+
+int8_t smoothAlg_nonblock_job(int16_t *temperature)
 {
 	float smoothAnswer;
 
 	if (smoothAlg_nonblock(&smoothAlg_temp, smoothVector, TEMPERATURE_SMOOTHALG_MAXSIZE, &smoothAnswer))
 	{
-//usart_println_string("smoothAlg_nonblock");
-
 		if (smoothAnswer > 0.0f)
 		{
-			float Rtd = (smoothAnswer*0.097948f)+ INA326_R_OPPOSITE;
-			//Rtd *= 1.011f;//factor de correccion
-			Rtd *= 1.005f;//factor de correccion
+
+			float Rtd = (smoothAnswer*0.097852f)+ INA326_R_OPPOSITE;
+			//float Rtd = (smoothAnswer*0.097948f)+ INA326_R_OPPOSITE;
+			Rtd *= 1.021f;//factor de correccion /tarjeta A
+			//Rtd *= 1.00f;//factor de correccion //tarjeta B
 
 			*temperature = (int)T_rtd(Rtd);
 		}
@@ -379,46 +350,27 @@ int8_t MAX6675_smoothAlg_nonblock_job(int16_t *temperature)
 	return 0;
 }
 
-/*****************************************************
-tendria que cambiar la temperature_job para saber cuando tiene correctamente la temperatura
-para poder leer al inicio del programa, ojo xq se necesita el flag de systick
-*****************************************************/
 int temperature_filtered_smoothed;
-//int temperature_filtered_smoothed_last;
-
 int8_t temperature_job(void)
 {
-	char bufferTC[20];
-
 	int8_t codret = 0;
 	static int8_t sm0;
-
-//	usart_println_string("+++");
-
 	if (sm0 == 0)
 	{
 		if (AdqAccSamples() )
 		{
-
 			sm0++;
 		}
 	}
 	else
 	{
-		if (MAX6675_smoothAlg_nonblock_job( &temperature_filtered_smoothed ))
+		if (smoothAlg_nonblock_job( &temperature_filtered_smoothed ))
 		{
 			if (pgrmode.bf.unitTemperature == FAHRENHEIT)
 			{
 //				temperature_filtered_smoothed = (temperature_filtered_smoothed*1.8f) + 32;//TCtemperature = (TCtemperature*(9.0f/5)) + 32;
-
-
-//				itoa(TCtemperature,bufferTC,10);
-//usart_print_string("T:");
-//usart_println_string(bufferTC);
-
 			}
 			sm0 = 0x00;
-
 			codret = 1;	//fin del proceso
 		}
 	}

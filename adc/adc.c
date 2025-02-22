@@ -55,7 +55,14 @@ void ADC_disable(void)
 {
 	BitTo0(ADCSRA, ADEN);
 }
-
+void ADC_setBit_startConversion_On(void)
+{
+	BitTo1(ADCSRA, ADSC);
+}
+void ADC_setBit_startConversion_Off(void)
+{
+	BitTo0(ADCSRA, ADSC);
+}
 
 void ADC_set_adjust(uint8_t adj)
 {
@@ -77,8 +84,24 @@ uint8_t ADC_get_resultL(void)
 {
 	return ADCL;
 }
+void ADC_setAutoTrigger_enabled(void)
+{
+	BitTo1(ADCSRA, ADATE);
+}
+void ADC_setAutoTrigger_disabled(void)
+{
+	BitTo0(ADCSRA, ADATE);
+}
+void ADC_setAutoTrigger_source(uint8_t trigger_source)
+{
+	#if defined (__AVR_ATmega32__)  || defined (__AVR_ATmega32A__)
+		SFIOR = (SFIOR & 0x0F) | (trigger_source << 5);
+	#else //(__AVR_ATmega328P__)
+		ADCSRB =  (ADCSRB & 0xF8) | trigger_source;
+	#endif
 
-void ADC_init(int8_t mode, int8_t reference, int8_t preescaler)
+}
+void ADC_init(int8_t trigger_source, int8_t reference, int8_t preescaler)
 {
 	//ADC_set_reference(ADC_REF_AREF);//Aref tied +VDD
 	//ADC_set_reference(ADC_REF_AVCC);//
@@ -91,20 +114,15 @@ void ADC_init(int8_t mode, int8_t reference, int8_t preescaler)
 
 	//
 
-	if (mode == ADC_MODE_AUTOTRIGGER_DISABLED)
+	if (trigger_source == ADC_AUTOTRIGGER_SOURCE_DISABLED)
 	{
-		BitTo0(ADCSRA, ADATE);
+		ADC_setAutoTrigger_disabled();//BitTo0(ADCSRA, ADATE);
 	}
 	else
 	{
-		BitTo1(ADCSRA, ADATE);
-		#if defined (__AVR_ATmega32__)  || defined (__AVR_ATmega32A__)
-			SFIOR = (SFIOR & 0x0F) | (mode<<5);
-		#else //(__AVR_ATmega328P__)
-			ADCSRB =  (ADCSRB & 0xF8) | mode;
-		#endif
+		ADC_setAutoTrigger_enabled();//BitTo1(ADCSRA, ADATE);
 
-
+		ADC_setAutoTrigger_source(trigger_source);
 
 	}
 	//
@@ -127,7 +145,7 @@ void ADC_start_conv(uint8_t channel)
  * Poll (wait) for the Interrupt Flag (ADIF) bit in the ADCSRA register to be set, indicating that the
 conversion is completed.
  */
-	BitTo1(ADCSRA, ADSC);
+	ADC_setBit_startConversion_On();//BitTo1(ADCSRA, ADSC);
 }
 
 void ADC_start_and_wait_conv(uint8_t channel)

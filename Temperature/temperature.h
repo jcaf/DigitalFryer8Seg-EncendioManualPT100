@@ -25,7 +25,7 @@ void MAX6675_formatText3dig(int16_t temper, unsigned char *str_out);
 #endif
 
 int8_t MAX6675_job(void);
-int8_t MAX6675_smoothAlg_nonblock_job(int16_t *TCtemperature);
+int8_t smoothAlg_nonblock_job(int16_t *TCtemperature);
 
 extern int TCtemperature;
 extern int temperature_filtered_smoothed;

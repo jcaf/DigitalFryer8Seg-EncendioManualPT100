@@ -54,6 +54,8 @@
 #include "disp7s_applevel.h"
 #include "adc/adc.h"
 #include "error/error.h"
+#include "termopile/termopile.h"
+
 #include "usart/usart.h"
 #include "serial/serial.h"
 
@@ -72,6 +74,8 @@ const struct _fryer fryer_reset;
 
 struct _job job_captureTemperature;
 const struct _job job_reset;
+
+struct _job job_captureTermopile;
 
 //k-load from EEPROM
 struct _t EEMEM COOKTIME[BASKET_MAXSIZE]= { {7, 10}, {7,10} };    //mm:ss
@@ -201,88 +205,34 @@ void fryer_init(void)
 	fryer.basket[BASKET_RIGHT].display.cursor.y = 0x00;
 	//--++
 }
-
-#define TERMOPILA_VOLTAGE 0.150f//0.6V
-#define ADC_VOLTAGE_REFERENCE 2.56
-#define TERMOPILA_ADC_VALUE	((1023.0f*TERMOPILA_VOLTAGE)/ADC_VOLTAGE_REFERENCE)
-
-struct _termopila
+void ADC_config2temperature(void)
 {
-	int sm0;
-	int sm1;
-	int counter0;
-	int counter1;
-	int error_counter;
-}termopila;
-const struct _termopila termopilaReset;
+	//
+	ADC_setAutoTrigger_disabled();
+	ADC_disable();
+	//
+	ADC_set_channel(ADC_CH_2);
+	ADC_enable();
+	ADC_set_prescaler(ADC_PRESCALER_128);
+	ADC_set_reference(ADC_REF_AVCC);
+	ADC_setAutoTrigger_enabled();
+	ADC_setAutoTrigger_source(ADC_AUTOTRIGGER_SOURCE_FREE_RUNNING);
+	ADC_setBit_startConversion_On();
 
-void termopila_error(void)
+}
+void ADC_config2termopile(void)
 {
-	if (termopila.sm0 == 0)
-	{
-		if (mainflag.sysTickMs)
-		{
-			if (++termopila.counter0 >= 50)
-			{
-				termopila.counter0 = 0;
-				termopila.sm0++;
-			}
-		}
-	}
-	else
-	{
-		if (termopila.sm1 == 0)
-		{
-			if ( mainflag.ADCrecurso == ADC_LIBRE)
-			{
-				mainflag.ADCrecurso = ADC_OCUPADO;
-				//
-				ADC_set_reference(ADC_REF_INTERNAL_2_56V);
-				ADC_start_conv(ADC_CH_0);
-
-				termopila.sm1++;
-			}
-		}
-		else
-		{
-			if (isr_flag.adcReady == 1)
-			{
-				isr_flag.adcReady = 0;
-				//
-				mainflag.ADCrecurso = ADC_LIBRE;
-				termopila.sm0 = 0;
-				termopila.sm1 = 0;
-				//
-				uint8_t adclow = ADCL;
-				uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
-				//
-				if ( adc16 < (uint16_t)TERMOPILA_ADC_VALUE )
-				{
-					termopila.error_counter++;
-				}
-
-				if (++termopila.counter1 >= 10) //cada 500 ms
-				{
-					termopila.counter1 = 0;
-					//
-					if (termopila.error_counter >= 10)
-					{
-						//main_schedule.bf.status_thermopile = STATUS_THERMOPILE_BAD;
-						e.sensor[ERROR_IDX_THERMOPILE].code = 1;//ERROR
-					}
-					else
-					{
-						//main_schedule.bf.status_thermopile = STATUS_THERMOPILE_OK;
-						e.sensor[ERROR_IDX_THERMOPILE].code = 0;//NO ERROR
-					}
-
-					termopila.error_counter = 0;
-				}
-
-			}
-		}
-
-	}
+	//
+	ADC_setAutoTrigger_disabled();
+	ADC_disable();
+	//
+	ADC_set_channel(ADC_CH_0);
+	ADC_enable();
+	ADC_set_prescaler(ADC_PRESCALER_128);
+	ADC_set_reference(ADC_REF_INTERNAL_2_56V);
+	ADC_setAutoTrigger_enabled();
+	ADC_setAutoTrigger_source(ADC_AUTOTRIGGER_SOURCE_FREE_RUNNING);
+	ADC_setBit_startConversion_On();
 }
 
 int main(void)
@@ -294,8 +244,8 @@ int main(void)
 	int8_t systick_counter0=0;
 	int16_t counter_displayACIER=0;
 
-	uint16_t temperatura_timer=0;
-	int8_t temperatura_sm0=0;
+	uint16_t ADCcoordinadorTiempos_timer=0;
+	int8_t ADCcoordinadorTiempos_sm0=0;
 
 
 
@@ -325,19 +275,9 @@ int main(void)
 	PinTo0(PORTWxSOL_GAS_QUEMADOR, PINxSOL_GAS_QUEMADOR);
 	ConfigOutputPin(CONFIGIOxSOL_GAS_QUEMADOR, PINxSOL_GAS_QUEMADOR);
 
-	//ADC_init(ADC_MODE_AUTOTRIGGER_DISABLED, ADC_REF_AVCC, ADC_PRESCALER_128);
-	ADC_init(ADC_MODE_AUTOTRIGGER_FREE_RUNNING, ADC_REF_AVCC, ADC_PRESCALER_128);
-
-	ADC_set_channel(ADC_CH_2);
-
-	BitTo1(ADCSRA, ADSC);
-//	while(!(ADCSRA & (1 << ADIF)))//Esperar por 1 conversion
-//		{;}
-//	ADCSRA |= (1 << ADIF); //reset as required
-	//activar INTERRUPCIONES
-//	BitTo1(ADCSRA,ADIE);//
-
-	mainflag.ADCrecurso = ADC_LIBRE;
+//	ADC_init(ADC_AUTOTRIGGER_SOURCE_FREE_RUNNING, ADC_REF_AVCC, ADC_PRESCALER_128);
+//	ADC_set_channel(ADC_CH_2);
+//	BitTo1(ADCSRA, ADSC);
 
 	PinTo1(PORTWxHIGHLIMIT,PINxHIGHLIMIT);
 	ConfigInputPin(CONFIGIOxHIGHLIMIT, PINxHIGHLIMIT);
@@ -414,40 +354,57 @@ int main(void)
 //				//main_schedule.bf.status_thermocuple = STATUS_THERMOCOUPLE_OK;
 //			}
 			//////////////////////////////////////
-			///
-			if (temperatura_sm0 == 0)
+			if (ADCcoordinadorTiempos_sm0 == 0)
 			{
 				if (mainflag.sysTickMs)
 				{
-					if (++temperatura_timer >= (600/SYSTICK_MS))    //20ms
+					if (++ADCcoordinadorTiempos_timer >= (150/SYSTICK_MS))    //20ms
 					{
-						temperatura_timer = 0;
-						temperatura_sm0++;
+						ADCcoordinadorTiempos_timer = 0;
+
+						mainflag.ADCcoordinadorToggle = !mainflag.ADCcoordinadorToggle;
+
+						if (mainflag.ADCcoordinadorToggle == 1)
+						{
+							ADC_config2temperature();
+						}
+						else
+						{
+							ADC_config2termopile();
+						}
+
+						ADCcoordinadorTiempos_sm0++;
 					}
 				}
 			}
-			else if (temperatura_sm0 == 1)
+			else if (ADCcoordinadorTiempos_sm0 == 1)
 			{
-				if (temperature_job())
+				if (mainflag.ADCcoordinadorToggle == 1)
 				{
-					//usart_println_string("tj");
-
-					main_schedule.bf.startup_finish_stable_temperature = STARTUP_FINISHED;
-					e.sensor[ERROR_IDX_THERMOCOUPLE].code = 0;
-					//main_schedule.bf.status_thermocuple = STATUS_THERMOCOUPLE_OK;
-
-					if (TCtemperature != temperature_filtered_smoothed)
+					if (temperature_job())
 					{
-						TCtemperature = temperature_filtered_smoothed;
-						//Actualiza TC
-					}
+						main_schedule.bf.startup_finish_stable_temperature = STARTUP_FINISHED;
+						e.sensor[ERROR_IDX_THERMOCOUPLE].code = 0;
+						//main_schedule.bf.status_thermocuple = STATUS_THERMOCOUPLE_OK;
 
-					temperatura_sm0 = 0;
+						if (TCtemperature != temperature_filtered_smoothed)
+						{
+							TCtemperature = temperature_filtered_smoothed;//Actualiza TC
+						}
+
+						ADCcoordinadorTiempos_sm0 = 0;
+					}
+				}
+				else
+				{
+					if (termopile_job())
+					{
+						ADCcoordinadorTiempos_sm0 = 0;
+
+					}
 				}
 			}
-
 			//
-			       //termopila_error();
 
 			//El highlimit que normalmente este a pullup con el contacto normalmente CERRADO (CORREGIDO FEB 09 2024), y se activara cuando abra el contacto,
 			if (PinRead(PORTRxHIGHLIMIT, PINxHIGHLIMIT) == 1 )
@@ -735,7 +692,7 @@ ISR(TIMER0_COMP_vect)
 {
 	isr_flag.sysTickMs = 1;
 }
-ISR(ADC_vect)
-{
-	isr_flag.adcReady = 1;
-}
+//ISR(ADC_vect)
+//{
+//	isr_flag.adcReady = 1;
+//}

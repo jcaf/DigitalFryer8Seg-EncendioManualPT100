@@ -1,16 +1,16 @@
 #ifndef ADC_H_
 #define ADC_H_
 
-    #define ADC_MODE_AUTOTRIGGER_DISABLED 	-1	//SINGLE CONVERSION
+    #define ADC_AUTOTRIGGER_SOURCE_DISABLED 	-1	//SINGLE CONVERSION
 
-    #define ADC_MODE_AUTOTRIGGER_FREE_RUNNING 			0x00
-    #define ADC_MODE_AUTOTRIGGER_ANALOG_COMPARATOR 		0x01
-    #define ADC_MODE_AUTOTRIGGER_EXTERNAL_INT_REQ_0 		0x02
-    #define ADC_MODE_AUTOTRIGGER_TIMER0_COMPARE_MATCH_A 	0x03
-    #define ADC_MODE_AUTOTRIGGER_TIMER0_OVERFLOW 		0x04
-    #define ADC_MODE_AUTOTRIGGER_TIMER1_COMPARE_MATCH_B 	0x05
-    #define ADC_MODE_AUTOTRIGGER_TIMER1_OVERFLOW 		0x06
-    #define ADC_MODE_AUTOTRIGGER_TIMER1_CAPTURE_EVENT 	0x07
+    #define ADC_AUTOTRIGGER_SOURCE_FREE_RUNNING 			0x00
+    #define ADC_AUTOTRIGGER_SOURCE_ANALOG_COMPARATOR 		0x01
+    #define ADC_AUTOTRIGGER_SOURCE_EXTERNAL_INT_REQ_0 		0x02
+    #define ADC_AUTOTRIGGER_SOURCE_TIMER0_COMPARE_MATCH_A 	0x03
+    #define ADC_AUTOTRIGGER_SOURCE_TIMER0_OVERFLOW 		0x04
+    #define ADC_AUTOTRIGGER_SOURCE_TIMER1_COMPARE_MATCH_B 	0x05
+    #define ADC_AUTOTRIGGER_SOURCE_TIMER1_OVERFLOW 		0x06
+    #define ADC_AUTOTRIGGER_SOURCE_TIMER1_CAPTURE_EVENT 	0x07
 
     #define ADC_ADJUST_RIGHT	0
     #define ADC_ADJUST_LEFT		1
@@ -81,9 +81,17 @@
     void ADC_set_adjust(uint8_t adj);
     uint8_t ADC_get_resultH(void);
     uint8_t ADC_get_resultL(void);
+
+    void ADC_setAutoTrigger_enabled(void);
+    void ADC_setAutoTrigger_disabled(void);
+    void ADC_setAutoTrigger_source(uint8_t trigger_source);
+    void ADC_setBit_startConversion_On(void);
+    void ADC_setBit_startConversion_Off(void);
+
+
     //
     //void ADC_init(int8_t mode);
-    void ADC_init(int8_t mode, int8_t reference, int8_t preescaler);//
+    void ADC_init(int8_t trigger_source, int8_t reference, int8_t preescaler);//
     void ADC_start_conv(uint8_t channel);
     void ADC_start_and_wait_conv(uint8_t channel);
     uint16_t ADC_read(uint8_t channel);
