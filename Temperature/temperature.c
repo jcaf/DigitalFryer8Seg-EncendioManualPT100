@@ -338,7 +338,7 @@ int8_t smoothAlg_nonblock_job(int16_t *temperature)
 			//float Rtd = (smoothAnswer*0.097948f)+ INA326_R_OPPOSITE;
 			//Rtd *= 1.021f;//factor de correccion /tarjeta A
 			//Rtd *= 1.00f;//factor de correccion //tarjeta B
-			Rtd *= 1.021f;//factor de correccion //tarjeta B
+			Rtd *= 1.015f;//factor de correccion //tarjeta B
 
 			*temperature = (int)T_rtd(Rtd);
 		}
