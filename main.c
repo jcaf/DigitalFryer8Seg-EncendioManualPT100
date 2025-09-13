@@ -1,5 +1,6 @@
 /*
  Atmega32 version corregida del ADC
+ ultima prog. a tarjeta 13 agosto 2025
  ----------------------------------------
  1)    http://www.engbedded.com/fusecalc/
  lock bits:

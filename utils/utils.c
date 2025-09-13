@@ -4,7 +4,8 @@
  *  Created on: Dec 10, 2020
  *      Author: jcaf
  */
-#include <stdint.h>
+//#include <stdint.h>
+#include <stdint-gcc.h>
 #include <string.h>
 #include "utils.h"
 

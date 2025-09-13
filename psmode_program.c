@@ -17,7 +17,8 @@
 struct _pgrmmode pgrmode;
 
 /* Farenheiths*/
-struct _Tcoccion EEMEM TMPRTURE_COCCION = {
+struct _Tcoccion EEMEM TMPRTURE_COCCION =
+{
 		.TC = 350,
 		.max = 450,
 		.min = 50
