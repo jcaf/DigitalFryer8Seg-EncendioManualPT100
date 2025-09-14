@@ -16,12 +16,14 @@
 
 struct _pgrmmode pgrmode;
 
+
+
 /* Farenheiths*/
 struct _Tcoccion EEMEM TMPRTURE_COCCION =
 {
-		.TC = 350,
-		.max = 450,
-		.min = 50
+		.TC = TMPRTURE_COCCION_FARENHEIT_STD,
+		.max = TMPRTURE_COCCION_FARENHEIT_MAX,
+		.min = TMPRTURE_COCCION_FARENHEIT_MIN
 };
 struct _Tcoccion tmprture_coccion;
 

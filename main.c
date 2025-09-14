@@ -254,6 +254,31 @@ int main(void)
 
 	eeprom_read_block((struct _Tcoccion *)&tmprture_coccion , (struct _Tcoccion *)&TMPRTURE_COCCION, sizeof(struct _Tcoccion) );
 
+	//+-
+	pgrmode.bf.unitTemperature = CELSIUS;
+	//added 13/09/2025: dejando casi todo listo cuando se va a cambiar entre unidades de Farenheit o Centigrados
+	if (pgrmode.bf.unitTemperature == CELSIUS)
+	{
+		if (tmprture_coccion.max >	TMPRTURE_COCCION_CELCIUS_MAX )
+		{
+			tmprture_coccion.max = TMPRTURE_COCCION_CELCIUS_MAX;
+		}
+
+		if (tmprture_coccion.min <	TMPRTURE_COCCION_CELCIUS_MIN )
+		{
+			tmprture_coccion.min = TMPRTURE_COCCION_CELCIUS_MIN;
+		}
+
+		if (tmprture_coccion.TC > TMPRTURE_COCCION_CELCIUS_MAX )
+		{
+			tmprture_coccion.TC = TMPRTURE_COCCION_CELCIUS_STD;
+		}
+		//update
+		eeprom_update_block((struct _Tcoccion *)&tmprture_coccion , (struct _Tcoccion *)&TMPRTURE_COCCION, sizeof(struct _Tcoccion) );
+	}
+
+	//-+
+
 	fryer_init();
 
 	//Tiempo Necesario para estabilizar la tarjeta
