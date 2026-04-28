@@ -1,4 +1,5 @@
-/*
+/* ESTA ES LA VERSION PARA 16 Y 8 MHZ OPTIMIZADO AL 23/04/2026
+ * version 8Mhz
  Atmega32 version corregida del ADC
  ultima prog. a tarjeta 13 agosto 2025
  ----------------------------------------
@@ -43,6 +44,8 @@
  (ignorar el error de 0x3C... pues los 2 bits de mayor peso no estan implentados)
 */
 
+
+
 #include "main.h"
 #include "pinGetLevel/pinGetLevel.h"
 #include "psmode_program.h"
@@ -57,8 +60,8 @@
 #include "error/error.h"
 #include "termopile/termopile.h"
 
-#include "usart/usart.h"
-#include "serial/serial.h"
+//#include "usart/usart.h"
+//#include "serial/serial.h"
 
 volatile struct _isr_flag isr_flag;
 struct _mainflag mainflag;
@@ -206,20 +209,131 @@ void fryer_init(void)
 	fryer.basket[BASKET_RIGHT].display.cursor.y = 0x00;
 	//--++
 }
+
+
+#define ADC_DUMMY_CONVERSION_NUMMAX 2
+//2. El truco de la "Doble Conversión" para Referencias
+//Para mantener la precisión máxima al cambiar de AVCC (5V) a Interna (2.56V), el problema no es el canal, sino la carga del capacitor en el pin AREF.
+//Propuesta: En lugar de un delay por software, hacemos 2 conversiones dummy rápidas. La primera descarta el residuo de voltaje viejo, la segunda asegura que el comparador ya está estabilizado.
+
 void ADC_config2temperature(void)
 {
+	//1. No apagues el ADC (ADC_disable/enable)
+	//Apagar el ADC drena la lógica interna y hace que la primera conversión tarde 25 ciclos (en lugar de 13). Al mantenerlo encendido, el cambio de canal es más fluido.
+	//
+	//ADC_setAutoTrigger_disabled();
+	//ADC_disable();
+	//
+	ADC_set_channel(ADC_CH_2);
+	ADC_enable();
+
+	#if F_CPU == 8000000L
+		ADC_set_prescaler(ADC_PRESCALER_64);//@8MHz ADC_PRESCALER_64
+	#elif 	F_CPU == 16000000L
+		ADC_set_prescaler(ADC_PRESCALER_128);//@16MHz ADC_PRESCALER_128
+	#else
+		#error "ADC NO SET PRESCALER"
+	#endif
+
+	//
+	ADC_set_reference(ADC_REF_AVCC);
+	ADC_setAutoTrigger_enabled(ADC_AUTOTRIGGER_SOURCE_FREE_RUNNING);
+	ADC_setBit_startConversion_On();
+	//
+	//dummy conversion
+	//Tu ADC_DUMMY_CONVERSION_NUMMAX está en 1.
+	//Para la temperatura (AVCC): Suele ser suficiente con una conversión.
+	//
+	//Limpiar la bandera ADIF escribiendo un 1
+	ADCSRA |= (1 << ADIF);
+	for (int i = 0; i<ADC_DUMMY_CONVERSION_NUMMAX; i++ )
+	{
+		while(!(ADCSRA & (1 << ADIF)))
+			{;}
+		ADCSRA |= (1 << ADIF); //reset as required
+	}
+	//ADCSRA |= (1 << ADSC);	//con ADC_AUTOTRIGGER_SOURCE_FREE_RUNNING, NO PUEDE SER ADSC testeado porque nunca caera
+	//while (ADCSRA & (1 << ADSC));
+	//En efecto, cuando el ADC está en modo Free Running, el bit ADSC se mantiene en alto (1) permanentemente mientras el periférico esté habilitado, por lo que intentar esperar a que caiga (while (ADCSRA & (1 << ADSC))) causaría un bucle infinito. El uso de la bandera de interrupción ADIF es la forma profesional y correcta de sincronizar la lectura en este modo.
+}
+void ADC_config2termopile(void)
+{
+	//
+	//ADC_setAutoTrigger_disabled();
+	//ADC_disable();
+	//
+	ADC_set_channel(ADC_CH_0);
+	ADC_enable();
+
+	#if F_CPU == 8000000L
+		ADC_set_prescaler(ADC_PRESCALER_64);//@8MHz ADC_PRESCALER_64
+	#elif 	F_CPU == 16000000L
+		ADC_set_prescaler(ADC_PRESCALER_128);//@16MHz ADC_PRESCALER_128
+	#else
+		#error "ADC NO SET PRESCALER"
+	#endif
+	//
+	ADC_set_reference(ADC_REF_INTERNAL_2_56V);
+
+	ADC_setAutoTrigger_enabled(ADC_AUTOTRIGGER_SOURCE_FREE_RUNNING);
+	ADC_setBit_startConversion_On();
+	//
+	//dummy conversion
+	//Para la termopila (2.56V): Si notas que el primer valor después de cambiar de canal es un poco alto o bajo, podrías subir ese valor a 2 o 3. El regulador interno de 2.56V a veces necesita un par de ciclos de reloj del ADC para estabilizar el capacitor de AREF después de haber estado en 5V (AVCC).
+	//
+	//Limpiar la bandera ADIF escribiendo un 1
+	ADCSRA |= (1 << ADIF);
+
+	for (int i = 0; i<ADC_DUMMY_CONVERSION_NUMMAX; i++ )
+	{
+		while(!(ADCSRA & (1 << ADIF)))
+			{;}
+		ADCSRA |= (1 << ADIF); //reset as required
+	}
+}
+/*
+ *¿Por qué esto mantiene la precisión?Aislamiento de Muestras: Al esperar dos ciclos de ADIF, le das tiempo al condensador de Sample & Hold interno para que se descargue del voltaje anterior y se cargue con el nuevo.Referencia Estable: El cambio de 5V a 2.56V en el pin AREF es el cambio más crítico. Si tienes un capacitor de 100nF en AREF (recomendado), este necesita tiempo físico para estabilizarse. Dos conversiones a 125kHz son aproximadamente $200\mu s$, tiempo suficiente para la mayoría de los capacitores de desacoplo.Consistencia en temperature_job: Al final de la configuración, dejas el flag ADIF limpio. Tu job leerá el valor filtrado con la certeza de que no hay "contaminación" del canal anterior.
+ */
+
+
+/*
+ * #define ADC_DUMMY_CONVERSION_NUMMAX 1
+void ADC_config2temperature(void)
+{
+	//1. No apagues el ADC (ADC_disable/enable)
+	//Apagar el ADC drena la lógica interna y hace que la primera conversión tarde 25 ciclos (en lugar de 13). Al mantenerlo encendido, el cambio de canal es más fluido.
 	//
 	ADC_setAutoTrigger_disabled();
 	ADC_disable();
 	//
 	ADC_set_channel(ADC_CH_2);
 	ADC_enable();
-	ADC_set_prescaler(ADC_PRESCALER_128);
-	ADC_set_reference(ADC_REF_AVCC);
-	ADC_setAutoTrigger_enabled();
-	ADC_setAutoTrigger_source(ADC_AUTOTRIGGER_SOURCE_FREE_RUNNING);
-	ADC_setBit_startConversion_On();
 
+	#if F_CPU == 8000000L
+		ADC_set_prescaler(ADC_PRESCALER_64);//@8MHz ADC_PRESCALER_64
+	#elif 	F_CPU == 16000000L
+		ADC_set_prescaler(ADC_PRESCALER_128);//@16MHz ADC_PRESCALER_128
+	#else
+		#error "ADC NO SET PRESCALER"
+	#endif
+
+	//
+	ADC_set_reference(ADC_REF_AVCC);
+	ADC_setAutoTrigger_enabled(ADC_AUTOTRIGGER_SOURCE_FREE_RUNNING);
+	ADC_setBit_startConversion_On();
+	//
+	//dummy conversion
+	//Tu ADC_DUMMY_CONVERSION_NUMMAX está en 1.
+	//Para la temperatura (AVCC): Suele ser suficiente con una conversión.
+	for (int i = 0; i<ADC_DUMMY_CONVERSION_NUMMAX; i++ )
+	{
+		while(!(ADCSRA & (1 << ADIF)))
+			{;}
+		ADCSRA |= (1 << ADIF); //reset as required
+	}
+	//ADCSRA |= (1 << ADSC);	//con ADC_AUTOTRIGGER_SOURCE_FREE_RUNNING, NO PUEDE SER ADSC testeado porque nunca caera
+	//while (ADCSRA & (1 << ADSC));
+	//En efecto, cuando el ADC está en modo Free Running, el bit ADSC se mantiene en alto (1) permanentemente mientras el periférico esté habilitado, por lo que intentar esperar a que caiga (while (ADCSRA & (1 << ADSC))) causaría un bucle infinito. El uso de la bandera de interrupción ADIF es la forma profesional y correcta de sincronizar la lectura en este modo.
 }
 void ADC_config2termopile(void)
 {
@@ -229,12 +343,66 @@ void ADC_config2termopile(void)
 	//
 	ADC_set_channel(ADC_CH_0);
 	ADC_enable();
-	ADC_set_prescaler(ADC_PRESCALER_128);
+
+	#if F_CPU == 8000000L
+		ADC_set_prescaler(ADC_PRESCALER_64);//@8MHz ADC_PRESCALER_64
+	#elif 	F_CPU == 16000000L
+		ADC_set_prescaler(ADC_PRESCALER_128);//@16MHz ADC_PRESCALER_128
+	#else
+		#error "ADC NO SET PRESCALER"
+	#endif
+	//
 	ADC_set_reference(ADC_REF_INTERNAL_2_56V);
-	ADC_setAutoTrigger_enabled();
-	ADC_setAutoTrigger_source(ADC_AUTOTRIGGER_SOURCE_FREE_RUNNING);
+
+	ADC_setAutoTrigger_enabled(ADC_AUTOTRIGGER_SOURCE_FREE_RUNNING);
+	ADC_setBit_startConversion_On();
+	//
+	//dummy conversion
+	//Para la termopila (2.56V): Si notas que el primer valor después de cambiar de canal es un poco alto o bajo, podrías subir ese valor a 2 o 3. El regulador interno de 2.56V a veces necesita un par de ciclos de reloj del ADC para estabilizar el capacitor de AREF después de haber estado en 5V (AVCC).
+	for (int i = 0; i<ADC_DUMMY_CONVERSION_NUMMAX; i++ )
+	{
+		while(!(ADCSRA & (1 << ADIF)))
+			{;}
+		ADCSRA |= (1 << ADIF); //reset as required
+	}
+}
+ */
+
+/*
+void ADC_config2temperature(void)
+{
+	//
+	ADC_setAutoTrigger_disabled();
+	ADC_disable();
+	//
+	ADC_set_channel(ADC_CH_2);
+	ADC_enable();
+	//@16MHz ADC_PRESCALER_128
+	//@8MHz ADC_PRESCALER_64
+	ADC_set_prescaler(ADC_PRESCALER_128);
+	//ADC_set_prescaler(ADC_PRESCALER_64);
+	ADC_set_reference(ADC_REF_AVCC);
+
 	ADC_setBit_startConversion_On();
 }
+void ADC_config2termopile(void)
+{
+	//
+	ADC_setAutoTrigger_disabled();
+	ADC_disable();
+	//
+	ADC_set_channel(ADC_CH_0);
+	ADC_enable();
+	//@16MHz ADC_PRESCALER_128
+	//@8MHz ADC_PRESCALER_64
+	ADC_set_prescaler(ADC_PRESCALER_128);
+	//ADC_set_prescaler(ADC_PRESCALER_64);
+
+	ADC_set_reference(ADC_REF_INTERNAL_2_56V);
+
+	ADC_setBit_startConversion_On();
+}
+*/
 
 int main(void)
 {
@@ -255,27 +423,28 @@ int main(void)
 	eeprom_read_block((struct _Tcoccion *)&tmprture_coccion , (struct _Tcoccion *)&TMPRTURE_COCCION, sizeof(struct _Tcoccion) );
 
 	//+-
-	pgrmode.bf.unitTemperature = CELSIUS;
+	pgrmode.bf.unitTemperature = FAHRENHEIT;//CELSIUS;//FAHRENHEIT;// CELSIUS;//;//;//FAHRENHEIT;
 	//added 13/09/2025: dejando casi todo listo cuando se va a cambiar entre unidades de Farenheit o Centigrados
-	if (pgrmode.bf.unitTemperature == CELSIUS)
-	{
-		if (tmprture_coccion.max >	TMPRTURE_COCCION_CELCIUS_MAX )
-		{
-			tmprture_coccion.max = TMPRTURE_COCCION_CELCIUS_MAX;
-		}
 
-		if (tmprture_coccion.min <	TMPRTURE_COCCION_CELCIUS_MIN )
-		{
-			tmprture_coccion.min = TMPRTURE_COCCION_CELCIUS_MIN;
-		}
-
-		if (tmprture_coccion.TC > TMPRTURE_COCCION_CELCIUS_MAX )
-		{
-			tmprture_coccion.TC = TMPRTURE_COCCION_CELCIUS_STD;
-		}
-		//update
-		eeprom_update_block((struct _Tcoccion *)&tmprture_coccion , (struct _Tcoccion *)&TMPRTURE_COCCION, sizeof(struct _Tcoccion) );
-	}
+//	if (pgrmode.bf.unitTemperature == CELSIUS)
+//	{
+//		if (tmprture_coccion.max >	TMPRTURE_COCCION_CELCIUS_MAX )
+//		{
+//			tmprture_coccion.max = TMPRTURE_COCCION_CELCIUS_MAX;
+//		}
+//
+//		if (tmprture_coccion.min <	TMPRTURE_COCCION_CELCIUS_MIN )
+//		{
+//			tmprture_coccion.min = TMPRTURE_COCCION_CELCIUS_MIN;
+//		}
+//
+//		if (tmprture_coccion.TC > TMPRTURE_COCCION_CELCIUS_MAX )
+//		{
+//			tmprture_coccion.TC = TMPRTURE_COCCION_CELCIUS_STD;
+//		}
+//		//update
+//		eeprom_update_block((struct _Tcoccion *)&tmprture_coccion , (struct _Tcoccion *)&TMPRTURE_COCCION, sizeof(struct _Tcoccion) );
+//	}
 
 	//-+
 
@@ -313,10 +482,11 @@ int main(void)
 	indicator_setPortPin(&PORTWxBUZZER, PINxBUZZER);
 	indicatorTimed_setKSysTickTime_ms(75/SYSTICK_MS);
 
-	//With prescaler 64, gets 1 ms exact (OCR0=249)
+	//16MHz With prescaler 64, gets 1 ms exact (OCR0=249)
+	//8MHz With prescaler 64, gets 1 ms exact (OCR0=124)
 	TCNT0 = 0x00;
 	TCCR0 = (1 << WGM01) | (0 << CS02) | (1 << CS01) | (1 << CS00); //CTC, PRES=64
-	OCR0 = CTC_SET_OCR_BYTIME(1e-3, 64); //TMR8-BIT @16MHz @PRES=1024-> BYTIME maximum = 16ms
+	OCR0 = CTC_SET_OCR_BYTIME(1e-3, 64); //TMR8-BIT @8MHz @PRES=64-> BYTIME maximum = 16ms
 	TIMSK |= (1 << OCIE0);
 	sei();
 
@@ -329,14 +499,6 @@ int main(void)
 	strncpy(str,DIPS7S_MSG_rInd,BASKET_DISP_MAX_CHARS_PERBASKET);
 	disp7s_update_data_array(str, BASKETRIGHT_DISP_CURSOR_START_X, BASKET_DISP_MAX_CHARS_PERBASKET);
 
-	//USART_Init(416);
-//	USART_Init(3); //depuracion a 250KBPS
-
-//	while (1)
-//	{
-//		usart_println_string("abc");
-//	}
-
 	while (1)
 	{
 		if (isr_flag.sysTickMs)
@@ -344,13 +506,13 @@ int main(void)
 			isr_flag.sysTickMs = 0;
 			mainflag.sysTickMs = 1;
 		}
-
+		disp7s_job();
 		if (mainflag.sysTickMs)
 		{
-			if (++systick_counter0 >= (1/SYSTICK_MS) )//ms
+			if (1)//(++systick_counter0 >= (1/SYSTICK_MS) )//ms
 			{
-				systick_counter0 = 0x00;
-				disp7s_job();
+				//systick_counter0 = 0x00;
+				//disp7s_job();
 			}
 		}
 
@@ -367,24 +529,14 @@ int main(void)
 		}
 		else
 		{
-
-			//------------------------------------------
-			//usart_println_string("ALT");
-
-//			if (temperature_job())
-//			{
-//				//usart_println_string("tj");
-//
-//				main_schedule.bf.startup_finish_stable_temperature = STARTUP_FINISHED;
-//				e.sensor[ERROR_IDX_THERMOCOUPLE].code = 0;
-//				//main_schedule.bf.status_thermocuple = STATUS_THERMOCOUPLE_OK;
-//			}
 			//////////////////////////////////////
 			if (ADCcoordinadorTiempos_sm0 == 0)
 			{
 				if (mainflag.sysTickMs)
 				{
-					if (++ADCcoordinadorTiempos_timer >= (150/SYSTICK_MS))    //20ms
+					//if (++ADCcoordinadorTiempos_timer >= (150/SYSTICK_MS))    //20ms
+					//if (++ADCcoordinadorTiempos_timer >= (15/SYSTICK_MS))    //20ms
+					if (++ADCcoordinadorTiempos_timer >= (7/SYSTICK_MS))    //20ms
 					{
 						ADCcoordinadorTiempos_timer = 0;
 
@@ -413,10 +565,10 @@ int main(void)
 						e.sensor[ERROR_IDX_THERMOCOUPLE].code = 0;
 						//main_schedule.bf.status_thermocuple = STATUS_THERMOCOUPLE_OK;
 
-						if (TCtemperature != temperature_filtered_smoothed)
-						{
-							TCtemperature = temperature_filtered_smoothed;//Actualiza TC
-						}
+//						if (TCtemperature != temperature_filtered_smoothed)
+//						{
+//							TCtemperature = temperature_filtered_smoothed;//Actualiza TC
+//						}
 
 						ADCcoordinadorTiempos_sm0 = 0;
 					}

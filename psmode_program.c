@@ -82,7 +82,7 @@ int8_t psmode_program(void)
 //		lcdan_set_cursor(DISP_CURSOR_BASKETRIGHT_START_X, 0);
 //		lcdan_print_string(str);
 
-		MAX6675_formatText3dig(TCtemperature, str);
+		temperature_format_temperature_3digits(TCtemperature, str);
 		disp7s_update_data_array(str, BASKETRIGHT_DISP_CURSOR_START_X, BASKET_DISP_MAX_CHARS_PERBASKET);
 
 	}
@@ -152,7 +152,7 @@ int8_t psmode_program(void)
 			else
 			{
 //				MAX6675_formatText3dig(tmprture_coccion.TC, str);
-				MAX6675_formatText3dig(tmprture_coccion.TC, str);
+				temperature_format_temperature_3digits(tmprture_coccion.TC, str);
 			}
 //			lcdan_set_cursor(DISP_CURSOR_BASKETRIGHT_START_X, 0);
 //			lcdan_print_string(str);

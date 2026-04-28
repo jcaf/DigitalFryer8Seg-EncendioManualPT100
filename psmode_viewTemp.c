@@ -36,7 +36,7 @@ int8_t psmode_viewTemp(void)
 	}
 	else if (fryer.ps_viewTemp.sm0 == 2)
 	{
-		MAX6675_formatText3dig(TCtemperature, str);
+		temperature_format_temperature_3digits(TCtemperature, str);
 		disp7s_update_data_array(str, BASKETRIGHT_DISP_CURSOR_START_X, BASKET_DISP_MAX_CHARS_PERBASKET);
 	}
 	else if (fryer.ps_viewTemp.sm0 == 3)

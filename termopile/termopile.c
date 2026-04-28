@@ -9,13 +9,13 @@
 #include "../error/error.h"
 #include "../smoothAlg/smoothAlg.h"
 
-#define TERMOPILE_SMOOTHALG_MAXSIZE 60// 8
+#define TERMOPILE_SMOOTHALG_MAXSIZE 30//60// 8
 static uint16_t smoothVector[TERMOPILE_SMOOTHALG_MAXSIZE];
 
 struct _smoothAlg smoothAlg_termopile;
 
 ////////////////////////////////////////////
-#define TERMOPILA_VOLTAGE 0.150f//0.6V
+#define TERMOPILA_VOLTAGE 0.140f//0.6V
 #define ADC_VOLTAGE_REFERENCE 2.56f
 #define TERMOPILA_ADC_VALUE	((1023.0f*TERMOPILA_VOLTAGE)/ADC_VOLTAGE_REFERENCE)
 
@@ -89,4 +89,81 @@ int8_t termopile_job(void)
 	return codret;
 }
 
+/*
+#define ALPHA_Q15   12879   // α ≈ 0.393  → T95 ≈ 300 ms con Ts = 50 ms
 
+static uint16_t filter_EMA(uint16_t x)
+{
+    // convertir estado filtrado anterior de Q15 a entero ADC
+    int32_t y_prev = termopila.emaQ15 >> 15;
+
+    // diferencia entre nueva muestra y filtrado anterior
+    int32_t diff = (int32_t)x - y_prev;
+
+    // actualización en Q15 (el núcleo del filtro)
+    termopila.emaQ15 += diff * (int32_t)ALPHA_Q15;
+
+    // devolver filtrado en entero ADC
+    return (uint16_t)(termopila.emaQ15 >> 15);
+}
+*/
+/*
+#define ALPHA_Q15  25441  // α ≈ 0.7764
+
+static uint16_t filter_EMA(uint16_t x)
+{
+    // valor filtrado anterior en entero (Q15 → entero)
+    int32_t y_prev = termopila.emaQ15 >> 15;
+
+    // diferencia entre nueva muestra y valor filtrado previo
+    int32_t diff = (int32_t)x - y_prev;
+
+    // yQ15 = yQ15 + alpha * diff
+    termopila.emaQ15 += diff * (int32_t)ALPHA_Q15;
+
+    // devolver valor filtrado como entero ADC
+    return (uint16_t)(termopila.emaQ15 >> 15);
+}
+int8_t termopile_job(void)
+{
+    int8_t codret = 0;
+
+
+    // 1) Leer ADC crudo
+    uint8_t adclow = ADCL;
+    uint16_t adc16 = (((uint16_t)ADCH) << 8) + adclow;
+
+    // 2) Suavizado profesional (EMA)
+    uint16_t smoothValue = filter_EMA(adc16);
+
+    // 3) Comparación con umbral
+    if (smoothValue < (uint16_t)TERMOPILA_ADC_VALUE)
+    {
+        termopila.error_counter++;
+    }
+
+    // 4) Tomar decisión cada 2 muestras (100 ms)
+    if (++termopila.counter0 >= 1)//2)
+    {
+        termopila.counter0 = 0;
+
+        if (termopila.error_counter >= 1)//2)
+        {
+            // ERROR
+            e.sensor[ERROR_IDX_THERMOPILE].code = 1;
+        }
+        else
+        {
+            // OK
+            e.sensor[ERROR_IDX_THERMOPILE].code = 0;
+        }
+
+        termopila.error_counter = 0;
+    }
+
+    codret = 1;
+    return codret;
+}
+
+
+*/

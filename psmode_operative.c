@@ -127,7 +127,7 @@ void p1(void)
 
 		if ((ikb_key_is_ready2read(fryer.basket[i].kb.down)) && (fryer.basket[i].cookCycle.bf.blinkDone == 0) && (fryer.basket[i].cookCycle.bf.on == 0))
 		{
-			//ikb_key_was_read(fryer.basket[i].kb.down);
+			ikb_key_was_read(fryer.basket[i].kb.down);
 			if (!ikb_inReptt(fryer.basket[i].kb.down))
 			{
 				indicatorTimed_setKSysTickTime_ms(75/SYSTICK_MS);
@@ -148,7 +148,7 @@ void p1(void)
 		}
 		if ((ikb_key_is_ready2read(fryer.basket[i].kb.up))  && (fryer.basket[i].cookCycle.bf.blinkDone == 0) && (fryer.basket[i].cookCycle.bf.on == 0))
 		{
-			//ikb_key_was_read(fryer.basket[i].kb.up);
+			ikb_key_was_read(fryer.basket[i].kb.up);
 			if (!ikb_inReptt(fryer.basket[i].kb.up))
 			{
 				indicatorTimed_setKSysTickTime_ms(75/SYSTICK_MS);
@@ -169,8 +169,8 @@ void p1(void)
 			time_inc(&basket_temp[i].cookCycle.time);
 		}
 		//clear
-		ikb_key_was_read(fryer.basket[i].kb.down);
-		ikb_key_was_read(fryer.basket[i].kb.up);
+//		ikb_key_was_read(fryer.basket[i].kb.down);
+//		ikb_key_was_read(fryer.basket[i].kb.up);
 
 
 		if (fryer.basket[i].kbmode == KBMODE_DEFAULT)
@@ -382,8 +382,6 @@ void p2(void)
 			}
 		}
 
-
-
 	}
 }
 void p3(void)
@@ -467,16 +465,4 @@ void psmode_operative(void)
 
 		}
 	}
-
-/*	if (fryer.viewmode == FRYER_VIEWMODE_COOK)
-	{
-		if (ikb_getKeyStartPressed(KB_LYOUT_PROGRAM))
-		{
-			ikb_clearKeyStartPressed(KB_LYOUT_PROGRAM);
-			//
-			indicator_setKSysTickTime_ms(75/SYSTICK_MS);
-			indicator_On();
-		}
-	}
-	*/
 }

@@ -15,7 +15,9 @@ struct _smoothAlg
 	float average;
 	int16_t Pos;	//# de elementos > que la media
 	int16_t Neg;	//# de elementos > que la media
-	float TD;		//Total Deviation
+	//float TD;		//Total Deviation
+	float TD_pos;
+	float TD_neg;
 	int SMOOTHALG_MAXSIZE;
 };
 

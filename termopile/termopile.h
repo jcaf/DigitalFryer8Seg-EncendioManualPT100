@@ -15,6 +15,8 @@ struct _termopila
 	int counter0;
 	int counter1;
 	int error_counter;
+	 // Filtro EMA en Q15
+	    int32_t emaQ15;
 };
 
 int8_t termopile_job(void);

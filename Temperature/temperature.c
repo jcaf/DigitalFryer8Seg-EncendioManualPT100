@@ -1,380 +1,419 @@
 /*
- * temperature.c
+ * temperature.c  (OPTIMIZED Q8.8 VERSION)
  *
- *  Created on: Dec 3, 2020
- *      Author: jcaf
+ * Author: jcaf
+ * Optimized: fixed-point Q8.8, no loss of precision
  */
 
 #include "../main.h"
 #include "../MAX6675/MAX6675.h"
-#include "../smoothAlg/smoothAlg.h"
 #include "temperature.h"
 #include "../psmode_program.h"
 #include "../disp7s_applevel.h"
 #include "../utils/utils.h"
 #include "../disp7s_applevel.h"
 #include "../adc/adc.h"
+#include <stdint.h>
 
-int TCtemperature;// = 30;
+/* ============================================================
+   GLOBALS (legacy compatibility)
+   ============================================================ */
+int TCtemperature;
+
+/////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////
+
+const uint16_t C_rtd_q8_8[] = {0,225,450,675,900,1125,1351,1576,1801,2027,2252,2478,2703,2929,3155,3380,3606,3832,4058,4284,4510,4736,4963,5189,5415,5641,5868,6094,6321,6548,6774,7001,7228,7455,7682,7908,8136,8363,8590,8817,9044,9272,9499,9726,9954,10181,10409,10637,10865,11092,11320,11548,11776,12004,12232,12461,12689,12917,13145,13374,13602,13831,14059,14288,14517,14746,14975,15203,15432,15661,15891,16120,16349,16578,16808,17037,17266,17496,17726,17955,18185,18415,18645,18874,19104,19334,19565,19795,20025,20255,20486,20716,20946,21177,21408,21638,21869,22100,22331,22561,22792,23023,23255,23486,23717,23948,24180,24411,24642,24874,25106,25337,25569,25801,26033,26265,26497,26729,26961,27193,27425,27657,27890,28122,28355,28587,28820,29053,29285,29518,29751,29984,30217,30450,30683,30917,31150,31383,31617,31850,32084,32317,32551,32785,33019,33252,33486,33720,33954,34189,34423,34657,34891,35126,35360,35595,35829,36064,36299,36534,36769,37003,37238,37473,37709,37944,38179,38414,38650,38885,39121,39356,39592,39828,40063,40299,40535,40771,41007,41243,41480,41716,41952,42189,42425,42662,42898,43135,43372,43609,43845,44082,44319,44557,44794,45031,45268,45506,45743,45980,46218,46456,46693,46931,47169,47407,47645,47883,48121,48359,48598,48836,49074,49313,49551,49790,50029,50267,50506,50745,50984,51223,51462,51701,51940,52180,52419,52659,52898,53138,53377,53617,53857,54097,54337,54577,54817,55057,55297,55537,55778,56018,56259,56499,56740,56981,57222,57463,57703,57944,58185,58427,58668,58909,59151,59392};
 
 /*
- * LM334-3 + 68 OHM PRECISION comprados en HIFI
+ * K = 5 / (1023 * G * Iref) ≈ 0.097948
+ * RSEG = (187.564 - 100) / 255 = 0.343389
+ *
+ * C = (K * 256) / RSEG ≈ 73.03
+ * C en Q8.8 → 73.03 * 256 ≈ 18700
  */
-#define INA326_G 49.9f
-#define REF200_I 0.001f
-#define GxI 0.05f//(INA326_G*REF200_I)
-#define INA326_R_OPPOSITE 100.0f//OHMS
+#define ADC_TO_SEG_Q8_8   18700UL
+
+static inline uint16_t adc_to_rseg_q8_8(uint16_t adc)
+{
+    uint32_t tmp;
+
+    // tmp = adc * C_ADC_TO_SEG (Q8.16)
+    tmp = (uint32_t)adc * ADC_TO_SEG_Q8_8;
+
+    // Redondeo y paso a Q8.8
+    tmp = (tmp + 128) >> 8;
+
+    if (tmp > (255UL << 8))
+        tmp = (255UL << 8);
+
+    return (uint16_t)tmp;
+}
+
+
+static inline uint16_t T_rtd_from_rseg_q8_8(uint16_t r_q8_8)
+{
+      // CASO EXACTO: final de tabla
+    if (r_q8_8 >= (255U << 8))
+        return C_rtd_q8_8[255];
+
+    uint16_t i;
+    uint8_t  frac;
+    uint16_t t0, t1;
+
+    i    = r_q8_8 >> 8;     // segmento
+    frac = r_q8_8 & 0xFF;   // α (Q0.8)
+
+    if (i > 254)
+        i = 254;
+
+    // aquí i SIEMPRE será 0..254
+    t0 = C_rtd_q8_8[i];
+    t1 = C_rtd_q8_8[i + 1];
+
+    return t0 + (((uint32_t)(t1 - t0) * frac) >> 8);
+}
+
+uint16_t T_rtd_from_adc_q8_8(uint16_t adc)
+{
+    uint16_t r_q8_8;
+    r_q8_8 = adc_to_rseg_q8_8(adc);
+    return T_rtd_from_rseg_q8_8(r_q8_8);
+}
+////////////////////////////////////////////////////////////////////////
+//Un detalle sobre el Filtro EMA
+//Si sientes que el valor tarda en llegar al real al encenderse (por el acumulador del EMA), podrías "forzar" el valor inicial:
+//Esto hará que la primera lectura válida sea instantánea en lugar de ver cómo la temperatura sube lentamente desde 0 hasta el valor real.
+////////////////////////////////////////////////////////////////////////
+#define AVG_WINDOW 8//2^3
+#define EMA_SHIFT   2        // 2 = 1/4 (rápido), 3 = 1/8 (actual)
+//+-NUEVO
+#define EMA_ROUND  (1 << (EMA_SHIFT - 1))
+//-+
 /*
-G*(Rpt100*Iref - INA326_R_OPPOSITE*Iref) = Voltaje_ADC_uC
-despejando Rpt100...
-
-R = Voltaje_ADC_uC/(G*Iref) + INA326_R_OPPOSITE
-
-Por otro lado tenemos que Voltaje_ADC_uC es :
-[ADCH:ADCL] * (5V/1023)
-
-Entonces la ecuacion es la siguiente
-
-Rpt100 = [ADCH:ADCL]*(5/(1023*G*Iref)) + INA326_R_OPPOSITE
-
-Resolviendo tenemos
-octave:1> 5/(1023*49.9*0.001)
-ans = 0.097948
-
-
-octave:7> 5/(1024*49.9*0.001)
-ans = 0.097852
-
-Rpt100 = [ADCH:ADCL]*(0.097948) + INA326_R_OPPOSITE
-Rpt100 = [ADCH:ADCL]*(0.097852) + INA326_R_OPPOSITE
-
-*/
-
-#include <stdio.h>
-#include <stdlib.h>
-
-
-//**************************************************************
-// File         : RTDpwl.c
-// Author       : Automatically generated using 'coefRTD.exe'
-// Compiler     : intended for Keil C51
-// Description  : Subroutines for linearization of RTD signals
-//                using piecewise linear approximation method.
-// More Info    : Details in application note AN-709, available
-//                at....  http://www.analog.com/MicroConverter
-//**************************************************************
-
-// definitons....
-#define TMIN (0)  // = minimum temperature in degC
-#define TMAX (232.0)  // = maximum temperature in degC
-#define RMIN (100.0)  // = input resistance in ohms at 0 degC
-#define RMAX (187.564f)  // = input resistance in ohms at 232 degC
-#define NSEG 255  // = number of sections in table
-#define RSEG 0.343389f  // = (RMAX-RMIN)/NSEG = resistance RSEG in ohms of each segment
-
-// lookup table....
-//const float C_rtd[] PROGMEM = {-1.42214e-05,0.878715,1.75767,2.63686,3.51627,4.39592,5.27579,6.15589,7.03622,7.91678,8.79757,9.67859,10.5598,11.4413,12.323,13.205,14.0871,14.9696,15.8522,16.7351,17.6182,18.5015,19.385,20.2688,21.1529,22.0371,22.9216,23.8063,24.6913,25.5765,26.4619,27.3476,28.2335,29.1196,30.0059,30.8925,31.7794,32.6664,33.5537,34.4412,35.329,36.217,37.1053,37.9937,38.8824,39.7714,40.6606,41.55,42.4396,43.3295,44.2197,45.11,46.0006,46.8915,47.7826,48.6739,49.5654,50.4572,51.3493,52.2415,53.1341,54.0268,54.9198,55.813,56.7065,57.6002,58.4942,59.3883,60.2828,61.1774,62.0724,62.9675,63.8629,64.7586,65.6544,66.5506,67.4469,68.3435,69.2404,70.1375,71.0348,71.9324,72.8302,73.7282,74.6266,75.5251,76.4239,77.3229,78.2222,79.1217,80.0215,80.9215,81.8218,82.7223,83.6231,84.5241,85.4253,86.3268,87.2286,88.1305,89.0328,89.9353,90.838,91.741,92.6442,93.5477,94.4514,95.3553,96.2596,97.164,98.0687,98.9737,99.8789,100.784,101.69,102.596,103.502,104.409,105.315,106.222,107.13,108.037,108.945,109.853,110.761,111.669,112.578,113.487,114.396,115.306,116.216,117.126,118.036,118.946,119.857,120.768,121.679,122.591,123.503,124.415,125.327,126.24,127.152,128.065,128.979,129.892,130.806,131.72,132.634,133.549,134.464,135.379,136.294,137.21,138.126,139.042,139.958,140.875,141.792,142.709,143.627,144.544,145.462,146.38,147.299,148.218,149.137,150.056,150.975,151.895,152.815,153.735,154.656,155.577,156.498,157.419,158.341,159.263,160.185,161.107,162.03,162.953,163.876,164.8,165.723,166.647,167.572,168.496,169.421,170.346,171.271,172.197,173.123,174.049,174.975,175.902,176.829,177.756,178.683,179.611,180.539,181.467,182.396,183.325,184.254,185.183,186.113,187.043,187.973,188.903,189.834,190.765,191.696,192.628,193.56,194.492,195.424,196.357,197.289,198.223,199.156,200.09,201.024,201.958,202.892,203.827,204.762,205.698,206.633,207.569,208.505,209.442,210.379,211.316,212.253,213.19,214.128,215.066,216.005,216.943,217.882,218.822,219.761,220.701,221.641,222.581,223.522,224.463,225.404,226.345,227.287,228.229,229.171,230.114,231.057,232};
-const float C_rtd[]= {-1.42214e-05,0.878715,1.75767,2.63686,3.51627,4.39592,5.27579,6.15589,7.03622,7.91678,8.79757,9.67859,10.5598,11.4413,12.323,13.205,14.0871,14.9696,15.8522,16.7351,17.6182,18.5015,19.385,20.2688,21.1529,22.0371,22.9216,23.8063,24.6913,25.5765,26.4619,27.3476,28.2335,29.1196,30.0059,30.8925,31.7794,32.6664,33.5537,34.4412,35.329,36.217,37.1053,37.9937,38.8824,39.7714,40.6606,41.55,42.4396,43.3295,44.2197,45.11,46.0006,46.8915,47.7826,48.6739,49.5654,50.4572,51.3493,52.2415,53.1341,54.0268,54.9198,55.813,56.7065,57.6002,58.4942,59.3883,60.2828,61.1774,62.0724,62.9675,63.8629,64.7586,65.6544,66.5506,67.4469,68.3435,69.2404,70.1375,71.0348,71.9324,72.8302,73.7282,74.6266,75.5251,76.4239,77.3229,78.2222,79.1217,80.0215,80.9215,81.8218,82.7223,83.6231,84.5241,85.4253,86.3268,87.2286,88.1305,89.0328,89.9353,90.838,91.741,92.6442,93.5477,94.4514,95.3553,96.2596,97.164,98.0687,98.9737,99.8789,100.784,101.69,102.596,103.502,104.409,105.315,106.222,107.13,108.037,108.945,109.853,110.761,111.669,112.578,113.487,114.396,115.306,116.216,117.126,118.036,118.946,119.857,120.768,121.679,122.591,123.503,124.415,125.327,126.24,127.152,128.065,128.979,129.892,130.806,131.72,132.634,133.549,134.464,135.379,136.294,137.21,138.126,139.042,139.958,140.875,141.792,142.709,143.627,144.544,145.462,146.38,147.299,148.218,149.137,150.056,150.975,151.895,152.815,153.735,154.656,155.577,156.498,157.419,158.341,159.263,160.185,161.107,162.03,162.953,163.876,164.8,165.723,166.647,167.572,168.496,169.421,170.346,171.271,172.197,173.123,174.049,174.975,175.902,176.829,177.756,178.683,179.611,180.539,181.467,182.396,183.325,184.254,185.183,186.113,187.043,187.973,188.903,189.834,190.765,191.696,192.628,193.56,194.492,195.424,196.357,197.289,198.223,199.156,200.09,201.024,201.958,202.892,203.827,204.762,205.698,206.633,207.569,208.505,209.442,210.379,211.316,212.253,213.19,214.128,215.066,216.005,216.943,217.882,218.822,219.761,220.701,221.641,222.581,223.522,224.463,225.404,226.345,227.287,228.229,229.171,230.114,231.057,232};
-
-// lookup table size:
-//   = 255 linear sections
-//   = 256 coefficients
-//   = 1024 bytes (4 bytes per floating point coefficient)
-
-// linearization routine error band:
-//   = -2.08933e-05degC .. 2.56428e-05degC
-// specified over measurement range 0degC .. 232degC
-
-// _____________________________________________________________
-// Temperature of RTD Function                             T_rtd
-// input: r = resistance of RTD
-// output: T_rtd() = corresponding temperature of RTD
-// Calculates temperature of RTD as a function of resistance via
-// a piecewise linear approximation method.
-
-float T_rtd (float r)
+uint16_t adc_filter_1s(uint16_t adc_sample)
 {
-  float t;
-  int i;
-  i=(r-RMIN)/RSEG;       // determine which coefficients to use
-  if (i<0)               // if input is under-range..
-    i=0;                 // ..then use lowest coefficients
-  else if (i>NSEG-1)     // if input is over-range..
-    i=NSEG-1;            // ..then use highest coefficients
+    static uint32_t acc = 0;
+    static uint8_t count = 0;
+    static int32_t ema = 0;
+    static uint8_t initialized = 0;
 
-  //t = pgm_read_float(C_rtd[i]) + (r-(RMIN+RSEG*i))*(pgm_read_float(C_rtd[i+1])-pgm_read_float(C_rtd[i]))/RSEG;
-  t = C_rtd[i]+(r-(RMIN+RSEG*i))*(C_rtd[i+1]-C_rtd[i])/RSEG;
+    acc += adc_sample;
+    count++;
 
-  return (t);
-}
-/*
-// _____________________________________________________________
-// Resistance of RTD Function                              R_rtd
-// input: t = temperature of RTD
-// output: R_rtd() = corresponding resistance of RTD
-// Calculates resistance of RTD as a function of temperature via
-// a piecewise linear approximation method.
+    if (count < AVG_WINDOW)
+        return (uint16_t)ema;
 
-float R_rtd (float t)
-{
-  float r;
-  int i, adder;
+    uint16_t avg = acc >> 3;//divide por 2^3
 
-  // set up initial values
-  i = NSEG/2;           // starting value for 'i' index
-  adder = (i+1)/2;      // adder value used in do loop
+    acc = 0;
+    count = 0;
 
-  // determine if input t is within range
-  if (t<C_rtd[0])           // if input is under-range..
-    i=0;                    // ..then use lowest coefficients
-  else if (t>C_rtd[NSEG])   // if input is over-range..
-    i=NSEG-1;               // ..then use highest coefficients
-
-  // if input within range, determine which coefficients to use
-  else do
-  {
-    if (C_rtd[i]>t)   i-=adder; // either decrease i by adder..
-    if (C_rtd[i+1]<t) i+=adder; // ..or increase i by adder
-    if (i<0)       i=0;         // make sure i is >=0..
-    if (i>NSEG-1)  i=NSEG-1;    // ..and <=NSEG-1
-    adder = (adder+1)/2;        // divide adder by two (rounded)
-  } while ((C_rtd[i]>t)||(C_rtd[i+1]<t));   // repeat 'til done
-
-  // compute final result
-  r = RMIN+RSEG*i + (t-C_rtd[i])*RSEG/(C_rtd[i+1]-C_rtd[i]);
-
-  return (r);
-}
-
-// _____________________________________________________________
-// Minimum Temperature Function                         Tmin_rtd
-// Returns minimum temperature specified by lookup table.
-float Tmin_rtd ()
-{
-  return (TMIN);
-}
-
-// _____________________________________________________________
-// Maximum Temperature Function                         Tmax_rtd
-// Returns maximum temperature specified by lookup table.
-float Tmax_rtd ()
-{
-  return (TMAX);
-}
-
-// _____________________________________________________________
-// Minimum Resistance Function                          Rmin_rtd
-// Returns minimum RTD resistance specified by lookup table.
-float Rmin_rtd ()
-{
-  return (RMIN);
-}
-
-// _____________________________________________________________
-// Maximum Resistance Function                          Rmax_rtd
-// Returns maximum RTD resistance specified by lookup table.
-float Rmax_rtd ()
-{
-  return (RMAX);
-}
-*/
-
-
-#ifdef MAX6675_UTILS_LCD_PRINT3DIG_C
-/*****************************************************
-Format with 3 digits 999C
-*****************************************************/
-void MAX6675_formatText3dig_C(int16_t temper, char *str_out)
-{
-    char buff[10];
-
-	if (temper == MAX6675_THERMOCOUPLED_OPEN)
-	{
-		strcpy(str_out,"N.C ");//4posit
-        return;
+    //Inicialización correcta
+    if (!initialized)
+    {
+    	ema = (int32_t)avg << 3; // Inicializa el EMA al valor actual para evitar la rampa inicial
+        //ema = avg;	//original
+        initialized = 1;
     }
     else
     {
-        itoa(temper, buff, 10);//convierte
-
-        //4 positions to display
-        strcpy(str_out,"   C");
-
-        if (temper< 10)
-        {
-            strncpy(&str_out[2], buff, 1);
-        }
-        else if (temper<100)
-        {
-            strncpy(&str_out[1], buff, 2);
-        }
-        else if (temper<1000)
-        {
-            strncpy(&str_out[0], buff, 3);
-        }
-        else
-        {
-            strncpy(&str_out[0], buff, 4);
-        }
+        //ema += ((int32_t)avg - ema) >> 3;//original
+        ema += ((int32_t)avg - ema) >> EMA_SHIFT;
     }
+
+    return (uint16_t)ema;
 }
-#endif
-#ifdef MAX6675_UTILS_LCD_PRINT3DIG
-/*****************************************************
-Format with 4 digits 999 sin grados ni C
-*****************************************************/
-
-
-void MAX6675_formatText3dig(int16_t temperatura, unsigned char *str_out)
+*/
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/*
+uint16_t adc_filter_1s(uint16_t adc_sample)
 {
-	//1. clear the basket display
-	disp7s_blank_displays(str_out, 0, BASKET_DISP_MAX_CHARS_PERBASKET);
+    static uint32_t acc = 0;
+    static uint8_t count = 0;
+    static int32_t ema = 0;
+    static uint8_t initialized = 0;
 
-	if (temperatura == MAX6675_THERMOCOUPLED_OPEN)
-	{
-		str_out[0] = D7S_DATA_n | (1<< D7S_DP);
-		str_out[1] = D7S_DATA_c;
+    acc += adc_sample;
+    count++;
 
-	}
-	else if (temperatura>999)
-	{
-		str_out[0] = D7S_DATA_o;
-		str_out[1] = D7S_DATA_u;
-		str_out[2] = D7S_DATA_t;
-
-	}
-	else//numerical
-	{
-
-
-		integer_to_arraybcd_msb_lsb_paddingleft_blank(temperatura, str_out, BASKET_DISP_MAX_CHARS_PERBASKET-1 );
-
-		//unsigned char bcd[10];
-		//int k = integer_to_arraybcd_msb_lsb(temperatura, bcd);
-		//int idx= ((BASKET_DISP_MAX_CHARS_PERBASKET))-1 -k;
-		//for (int i = 0; i< k; i++ )
-		//{
-		//	str_out[idx++] = DISP7_NUMERIC_ARR[bcd[i]];
-		//}
-		str_out[BASKET_DISP_MAX_CHARS_PERBASKET-1] = D7S_DATA_GRADE_CENTIGRADE;
-	}
-	//fix right basket: upsidedown displays
-	disp7s_fix_upsidedown_display(&str_out[2]);
-}
-#endif
-/*****************************************************
-
-*****************************************************/
-#ifdef MAX6675_UTILS_LCD_PRINTCOMPLETE_C
-void MAX6675_convertIntTmptr2str_wformatPrintComplete(int16_t temper, char *str_out)
-{
-    char buff[10];
-
-    if (temper < 0)
+    if (count < AVG_WINDOW)
     {
-        if (temper == -1)
-            {strcpy(str_out,"N.C  ");}
-        return;
+        return (uint16_t)(acc / count);
+    }
+
+
+    uint16_t avg = acc >> 3;//divide por 2^3
+
+    acc = 0;
+    count = 0;
+
+    //Inicialización correcta
+    if (!initialized)
+    {
+        ema = avg;	//original
+        initialized = 1;
     }
     else
     {
-        itoa(temper, buff, 10);
+        //ORIGINAL
+        //ema += ((int32_t)avg - ema) >> EMA_SHIFT;
 
-        //5 positions to display: 1023 + C
-        strcpy(str_out,"    C");
+        //+-NUEVO
+        int32_t diff = (int32_t)avg - ema;
 
-        if (temper< 10)
-        {
-            strncpy(&str_out[3], buff, 1);
-        }
-        else if (temper<100)
-        {
-            strncpy(&str_out[2], buff, 2);
-        }
-        else if (temper<1000)
-        {
-            strncpy(&str_out[1], buff, 3);
-        }
-        else
-        {
-            strncpy(&str_out[0], buff, 4);
-        }
+        if (diff > 0)
+            ema += (diff + EMA_ROUND) >> EMA_SHIFT;
+        else if (diff < 0)
+            ema += (diff - EMA_ROUND) >> EMA_SHIFT;
+        //-+
+
     }
+
+    return (uint16_t)ema;
+
 }
-#endif
+*/
+#define AVG_WINDOW 8
+/////////////////////////////////////////////////////////////////
+#define EMA_SHIFT_FAST  1   // α = 1/2  (muy rápido)
+#define EMA_SHIFT_MED   2   // α = 1/4
+#define EMA_SHIFT_SLOW  3//4   // α = 1/16 (muy estable)
+/////////////////////////////////////////////////////////////////
+#define THRESH_FAST  5     // cambio grande
+#define THRESH_MED   1      // cambio medio
 
+//uint16_t adc_filter_adaptive(uint16_t adc_sample)
 
-#define TEMPERATURE_SMOOTHALG_MAXSIZE 60// 8
-static uint16_t smoothVector[TEMPERATURE_SMOOTHALG_MAXSIZE];
-
-struct _smoothAlg smoothAlg_temp;
-const struct _smoothAlg smoothAlg_reset;
-
-static int8_t AdqAccSamples(void)
+uint16_t adc_filter_1s(uint16_t adc_sample)
 {
-	uint8_t adclow = ADCL;
-	uint16_t adc16 = (((uint16_t)ADCH)<<8) + adclow;
+    static uint32_t acc = 0;
+    static uint8_t count = 0;
+    static int32_t ema = 0;
+    static uint8_t initialized = 0;
 
-	smoothVector[job_captureTemperature.counter0] = adc16;
+    acc += adc_sample;
+    count++;
 
-	if (++job_captureTemperature.counter0 >= TEMPERATURE_SMOOTHALG_MAXSIZE)
-	{
-		job_captureTemperature.counter0 = 0x00;
-		return 1;
-	}
-	return 0;
+    // Promedio parcial durante arranque
+    if (count < AVG_WINDOW)
+    {
+        return (uint16_t)(acc / count);
+    }
+
+    uint16_t avg = acc >> 3;
+    acc = 0;
+    count = 0;
+
+    if (!initialized)
+    {
+        ema = avg;
+        initialized = 1;
+        return (uint16_t)ema;
+    }
+
+    // velocidad de cambio
+    int32_t diff = (int32_t)avg - ema;
+    int32_t abs_diff = (diff >= 0) ? diff : -diff;
+
+    uint8_t shift;
+
+    if (abs_diff > THRESH_FAST)//5
+    {
+        shift = EMA_SHIFT_FAST;   // seguir rápido
+    }
+    else if (abs_diff > THRESH_MED)//5 4 3
+    {
+        shift = EMA_SHIFT_MED;    // intermedio
+    }
+    else
+    {
+        shift = EMA_SHIFT_SLOW;   // filtrar fuerte
+    }
+
+    //ema += diff >> shift;
+    //ema += (diff+EMA_ROUND) >> shift;
+    if (diff > 0)
+        ema += (diff + EMA_ROUND) >> shift;
+    else if (diff < 0)
+        ema += (diff - EMA_ROUND) >> shift;
+
+
+    return (uint16_t)ema;
 }
 
-int8_t smoothAlg_nonblock_job(int16_t *temperature)
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+/*
+ * Esto es correcto y muy eficiente para el modo Free Running porque:
+
+No detienes el flujo del programa principal esperando conversiones (el ADC trabaja "en segundo plano").
+
+Al leer ADCL primero, el hardware del AVR bloquea los registros para que el valor de 10 bits sea consistente (evitas que la parte alta sea de una muestra y la baja de otra).
+ */
+static inline uint16_t adc_read16(void)
 {
-	float smoothAnswer;
-
-	if (smoothAlg_nonblock(&smoothAlg_temp, smoothVector, TEMPERATURE_SMOOTHALG_MAXSIZE, &smoothAnswer))
-	{
-		if (smoothAnswer > 0.0f)
-		{
-
-			float Rtd = (smoothAnswer*0.097852f)+ INA326_R_OPPOSITE;
-			//float Rtd = (smoothAnswer*0.097948f)+ INA326_R_OPPOSITE;
-			//Rtd *= 1.021f;//factor de correccion /tarjeta A
-			//Rtd *= 1.00f;//factor de correccion //tarjeta B
-			Rtd *= 1.035f;//factor de correccion //tarjeta B
-
-			*temperature = (int)T_rtd(Rtd);
-		}
-		else
-		{
-			*temperature = 0;
-		}
-		return 1;
-	}
-	return 0;
+    uint8_t l = ADCL;
+    return ((uint16_t)ADCH << 8) | l;
 }
 
-int temperature_filtered_smoothed;
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//NUEVO FIX PARA 16MHz
+static inline uint16_t adc_read_blocking(void)//solo cuando es SINGLE CONVERSION, NO FREE RUNNING
+{
+	// iniciar conversión
+	ADCSRA |= (1 << ADSC);
+
+	// esperar a que termine
+	//while (ADCSRA & (1 << ADSC));
+	//wait for conversion to finish
+
+	while(!(ADCSRA & (1 << ADIF)))
+	{;}
+	ADCSRA |= (1 << ADIF); //reset as required
+	//
+
+	// leer (orden correcto: primero ADCL)
+	uint8_t l = ADCL;
+	uint8_t h = ADCH;
+
+	return ((uint16_t)h << 8) | l;
+}
+
+/* ============================================================
+   TEMPERATURE JOB
+   ============================================================ */
+//#define GAIN_Q8_8   ((uint32_t)(1.043f*256))//267   // ejemplo: 1.042 1er tarjeta
+//#define GAIN_Q8_8   ((uint32_t)(1.1f*256))//267   // ejemplo: 1.1  2da tarjeta
+//#define GAIN_Q8_8   ((uint32_t)(1.050f*256))//267   // ejemplo: 1.1  3ra tarjeta
+//#define GAIN_Q8_8   ((uint32_t)(1.075f*256))//267   // ejemplo: 1.1  4ta tarjeta
+
+#define GAIN_Q8_8   ((uint32_t)(1.06f*256))//267   // ejemplo: 1.1  5ta tarjeta
+
+
+static int8_t i_avg;
 int8_t temperature_job(void)
 {
-	int8_t codret = 0;
-	static int8_t sm0;
-	if (sm0 == 0)
-	{
-		if (AdqAccSamples() )
-		{
-			sm0++;
-		}
-	}
-	else
-	{
-		if (smoothAlg_nonblock_job( &temperature_filtered_smoothed ))
-		{
-			//temperature_filtered_smoothed ya viene en celcius
-			if (pgrmode.bf.unitTemperature == FAHRENHEIT)
-			{
-				temperature_filtered_smoothed = (temperature_filtered_smoothed*1.8f) + 32;//TCtemperature = (TCtemperature*(9.0f/5)) + 32;
-			}
-			sm0 = 0x00;
-			codret = 1;	//fin del proceso
-		}
-	}
-	return codret;
+    //
+    uint16_t raw = adc_read16();
+    //uint16_t raw = adc_read_blocking();
+    uint16_t ADCHL_filtered = adc_filter_1s(raw);
+    //
+    uint16_t r_q8_8 = adc_to_rseg_q8_8(ADCHL_filtered);
+    uint32_t T_q8_8 =  T_rtd_from_rseg_q8_8(r_q8_8);//fix bug 28/4/2026
+    //
+    // si quieres °C enteros:
+    //uint16_t T_C = T_q8_8 >> 8;
+    // si quieres decimal:
+    //uint16_t T_dec = (T_q8_8 & 0xFF) * 100 / 256;
+
+    //T_C = (float)T_C * 1.042f;
+    // Corrección de ganancia (1.042 ≈ 267/256)
+
+    // 1. Aplicar Ganancia: (Q8.8 * Q8.8) -> Q16.16, luego >> 8 para volver a Q16.8
+	// Usamos uint32_t para evitar el overflow de la parte entera momentáneamente
+	//  Aplicar Ganancia (Mantiene Q8.8)
+	// (Q8.8 * Q8.8) >> 8 = Q16.8 (24 bits enteros, 8 decimales)
+
+	// Remedio real para la precisión:
+
+    //T_q8_8 = ((uint32_t)T_q8_8 * GAIN_Q8_8) >> 8;
+    T_q8_8 = ( ((uint32_t)T_q8_8 * GAIN_Q8_8) +128) >> 8;// +128 es 0.5 en Q8.8 para redondear
+
+
+    if (pgrmode.bf.unitTemperature == FAHRENHEIT)//T_C = ((float)T_C *1.8f) + 32;
+    {
+    	//T_q8_8 = ((uint32_t)T_q8_8 * 461)>>8; // 461/256
+		//T_q8_8 += (32 << 8);
+
+		//T_C = ((float)T_C *1.8f) + 32;
+		// 3. Convertir a Fahrenheit (Mantiene Q8.8)
+		// Usamos 461 como 1.8 * 256.
+		// (T_c_q8.8 * 461) >> 8 sigue siendo Qx.8
+		T_q8_8 = (((uint32_t)T_q8_8 * 461) +128)>>8; // 461/256
+		T_q8_8 += (32 << 8);
+
+    }
+
+    // Extracción del entero final
+	// T_q8_8 ahora puede valer hasta ~115200 (450 << 8)
+	// 4. Solo al final, pasar a la variable entera de visualización
+    //uint16_t T_C = T_q8_8 >> 8;	//aqui tenemos el valor a final a publicar
+    uint16_t T_C = (T_q8_8+128) >> 8;	//aqui tenemos el valor a final a publicar
+
+
+    if (++i_avg >= AVG_WINDOW)
+    {
+    	i_avg = 0;
+    	TCtemperature = T_C;
+    	return 1;
+    }
+    else
+    {
+    	return 0;
+    }
+
+}
+
+/*
+ * int8_t temperature_job(void)
+{
+    //
+    uint16_t raw = adc_read16();
+    uint16_t ADCHL_filtered = adc_filter_1s(raw);
+    //
+    uint16_t r_q8_8 = adc_to_rseg_q8_8(ADCHL_filtered);
+    uint16_t T_q8_8 =  T_rtd_from_rseg_q8_8(r_q8_8);
+    //
+    // si quieres °C enteros:
+    uint16_t T_C = T_q8_8 >> 8;
+    // si quieres decimal:
+    //uint16_t T_dec = (T_q8_8 & 0xFF) * 100 / 256;
+
+    T_C = (float)T_C * 1.042f;
+
+
+    if (pgrmode.bf.unitTemperature == FAHRENHEIT)
+    {
+    	T_C = ((float)T_C *1.8f) + 32;
+    }
+
+    if (++i_avg >= AVG_WINDOW)
+    {
+    	i_avg = 0;
+    	TCtemperature = T_C;
+    	return 1;
+    }
+    else
+    {
+    	return 0;
+    }
+
+}
+ */
+
+void temperature_format_temperature_3digits(int16_t temperatura, unsigned char *str_out)
+{
+    //1. clear the basket display
+    disp7s_blank_displays(str_out, 0, BASKET_DISP_MAX_CHARS_PERBASKET);
+
+    if (temperatura == MAX6675_THERMOCOUPLED_OPEN)
+    {
+        str_out[0] = D7S_DATA_n | (1<< D7S_DP);
+        str_out[1] = D7S_DATA_c;
+    }
+    else if (temperatura>999)
+    {
+        str_out[0] = D7S_DATA_o;
+        str_out[1] = D7S_DATA_u;
+        str_out[2] = D7S_DATA_t;
+    }
+    else//numerical
+    {
+        integer_to_arraybcd_msb_lsb_paddingleft_blank(temperatura, str_out, BASKET_DISP_MAX_CHARS_PERBASKET-1 );
+        str_out[BASKET_DISP_MAX_CHARS_PERBASKET-1] = D7S_DATA_GRADE_CENTIGRADE;
+    }
+    //fix right basket: upsidedown displays
+    disp7s_fix_upsidedown_display(&str_out[2]);
 }

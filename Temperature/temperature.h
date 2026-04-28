@@ -13,7 +13,7 @@
 //#define MAX6675_UTILS_LCD_PRINTCOMPLETE_C
 
 #ifdef MAX6675_UTILS_LCD_PRINT3DIG
-void MAX6675_formatText3dig(int16_t temper, unsigned char *str_out);
+void temperature_format_temperature_3digits(int16_t temper, unsigned char *str_out);
 #endif
 
 #ifdef MAX6675_UTILS_LCD_PRINT3DIG_C

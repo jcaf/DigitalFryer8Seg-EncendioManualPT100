@@ -82,9 +82,12 @@
     uint8_t ADC_get_resultH(void);
     uint8_t ADC_get_resultL(void);
 
-    void ADC_setAutoTrigger_enabled(void);
     void ADC_setAutoTrigger_disabled(void);
+    //void ADC_setAutoTrigger_enabled(void);
+    void ADC_setAutoTrigger_enabled(uint8_t trigger_source);
+
     void ADC_setAutoTrigger_source(uint8_t trigger_source);
+
     void ADC_setBit_startConversion_On(void);
     void ADC_setBit_startConversion_Off(void);
 

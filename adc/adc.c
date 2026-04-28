@@ -84,10 +84,7 @@ uint8_t ADC_get_resultL(void)
 {
 	return ADCL;
 }
-void ADC_setAutoTrigger_enabled(void)
-{
-	BitTo1(ADCSRA, ADATE);
-}
+
 void ADC_setAutoTrigger_disabled(void)
 {
 	BitTo0(ADCSRA, ADATE);
@@ -101,6 +98,23 @@ void ADC_setAutoTrigger_source(uint8_t trigger_source)
 	#endif
 
 }
+
+void ADC_setAutoTrigger_enabled(uint8_t trigger_source)
+{
+	BitTo1(ADCSRA, ADATE);
+	ADC_setAutoTrigger_source(trigger_source);
+}
+/*
+void ADC_setAutoTrigger_enabled(void)
+{
+	BitTo1(ADCSRA, ADATE);
+}
+*/
+/*
+ * Es mejor que cuando se habilite el autotriger, se establezca cual
+ * es su fuente
+ */
+
 void ADC_init(int8_t trigger_source, int8_t reference, int8_t preescaler)
 {
 	//ADC_set_reference(ADC_REF_AREF);//Aref tied +VDD
@@ -120,10 +134,10 @@ void ADC_init(int8_t trigger_source, int8_t reference, int8_t preescaler)
 	}
 	else
 	{
-		ADC_setAutoTrigger_enabled();//BitTo1(ADCSRA, ADATE);
+ADC_setAutoTrigger_enabled(trigger_source);//BitTo1(ADCSRA, ADATE);
 
-		ADC_setAutoTrigger_source(trigger_source);
-
+//ADC_setAutoTrigger_enabled();//BitTo1(ADCSRA, ADATE);
+//ADC_setAutoTrigger_source(trigger_source);
 	}
 	//
 	//ADC_set_adjust(ADC_ADJUST_RIGHT);//by default
@@ -158,7 +172,7 @@ void ADC_start_and_wait_conv(uint8_t channel)
 	while(!(ADCSRA & (1 << ADIF)))
 		{;}
 	ADCSRA |= (1 << ADIF); //reset as required
-
+	//
 }
 
 /*

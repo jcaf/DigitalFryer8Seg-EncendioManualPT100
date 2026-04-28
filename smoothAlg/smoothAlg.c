@@ -34,21 +34,28 @@ int8_t smoothAlg_nonblock(struct _smoothAlg *smooth, uint16_t *buffer, int SMOOT
 			//
 			smooth->Pos = 0;
 			smooth->Neg = 0;
-			smooth->TD = 0;
+			//smooth->TD = 0;	//bug fixed 19/11/2025
+			smooth->TD_pos = 0;
+			smooth->TD_neg = 0;
+
 			smooth->sm0++;
 		}
 	}
 	//2 - Find Pos and Neg + |Dtotal|
 	else if (smooth->sm0 == 2)
 	{
+		float x = buffer[smooth->counter0];//added
+
 		if (buffer[smooth->counter0] > smooth->average)
 		{
 			smooth->Pos++;
-			smooth->TD += ( ((float)(buffer[smooth->counter0]))-smooth->average);//Find |Dtotal|
+			//smooth->TD += ( ((float)(buffer[smooth->counter0]))-smooth->average);//Find |Dtotal|
+			smooth->TD_pos += ( x -smooth->average);//desviacion positiva //bug fixed
 		}
 		if (buffer[smooth->counter0] < smooth->average)
 		{
 			smooth->Neg++;
+			smooth->TD_neg += ( smooth->average - x);	//desviacion negativo//bug fixed
 		}
 		//
 		if (++smooth->counter0 >= SMOOTHALG_MAXSIZE)
@@ -56,12 +63,19 @@ int8_t smoothAlg_nonblock(struct _smoothAlg *smooth, uint16_t *buffer, int SMOOT
 			smooth->counter0 = 0;
 			smooth->sm0 = 0;
 			//bug
-			if (smooth->TD<0)
-			{
-				smooth->TD *= -1;//convirtiendo a positivo
-			}
-			//
-			*Answer = smooth->average + ( ( (smooth->Pos-smooth->Neg) * smooth->TD )/ ( SMOOTHALG_MAXSIZE*SMOOTHALG_MAXSIZE) );
+//			if (smooth->TD<0)
+//			{
+//				smooth->TD *= -1;//convirtiendo a positivo
+//			}
+//			//
+//			*Answer = smooth->average + ( ( (smooth->Pos-smooth->Neg) * smooth->TD )/ ( SMOOTHALG_MAXSIZE*SMOOTHALG_MAXSIZE) );
+
+
+			// 3) TD_total (ambos lados)
+			float TD_total = smooth->TD_pos + smooth->TD_neg;
+			float correction = ( ((float)(smooth->Pos-smooth->Neg)) * TD_total)/ ((float)SMOOTHALG_MAXSIZE*(float)SMOOTHALG_MAXSIZE);
+			*Answer = smooth->average + correction;
+
 			return 1;
 			//
 		}
