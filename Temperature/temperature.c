@@ -184,8 +184,8 @@ uint16_t adc_filter_1s(uint16_t adc_sample)
 #define THRESH_FAST  5     // cambio grande
 #define THRESH_MED   1      // cambio medio
 
-//uint16_t adc_filter_adaptive(uint16_t adc_sample)
 
+/*
 uint16_t adc_filter_1s(uint16_t adc_sample)
 {
     static uint32_t acc = 0;
@@ -250,7 +250,59 @@ uint16_t adc_filter_1s(uint16_t adc_sample)
 
     return (uint16_t)ema;
 }
+*/
+uint16_t adc_filter_1s(uint16_t sample)
+{
+    static int32_t ema = 0;
+    static uint8_t initialized = 0;
 
+    if (!initialized)
+    {
+        ema = sample;
+        initialized = 1;
+        return sample;
+    }
+
+    int32_t diff = (int32_t)sample - ema;
+    int32_t abs_diff = (diff >= 0) ? diff : -diff;
+
+    uint8_t shift;
+////////////////////////////////////////////
+//    if (abs_diff > THRESH_FAST)
+//        shift = 1;   // α = 1/2 (muy rápido)
+//    else if (abs_diff > THRESH_MED)
+//        shift = 2;   // α = 1/4
+//    else
+//        shift = 3;   // α = 1/16 (muy suave)
+//
+//    ema += diff >> shift;
+//////////////////////////////////////
+///
+///
+	if (abs_diff > THRESH_FAST)//5
+   {
+	   shift = EMA_SHIFT_FAST;   // seguir rápido
+   }
+   else if (abs_diff > THRESH_MED)//5 4 3
+   {
+	   shift = EMA_SHIFT_MED;    // intermedio
+   }
+   else
+   {
+	   shift = EMA_SHIFT_SLOW;   // filtrar fuerte
+   }
+   int32_t round_val = (1 << (shift - 1)); // Redondeo dinámico: 0.5 para el shift actual
+
+   if (diff > 0)
+	   ema += (diff + round_val) >> shift;
+   else if (diff < 0)
+	   ema += (diff - round_val) >> shift;
+
+   return (uint16_t)ema;
+
+
+
+}
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 /*

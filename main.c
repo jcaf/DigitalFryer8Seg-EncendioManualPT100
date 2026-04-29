@@ -424,7 +424,7 @@ int main(void)
 	eeprom_read_block((struct _Tcoccion *)&tmprture_coccion , (struct _Tcoccion *)&TMPRTURE_COCCION, sizeof(struct _Tcoccion) );
 
 	//+-
-	pgrmode.bf.unitTemperature = FAHRENHEIT;//CELSIUS;//FAHRENHEIT;// CELSIUS;//;//;//FAHRENHEIT;
+	pgrmode.bf.unitTemperature = CELSIUS;//FAHRENHEIT;// CELSIUS;//;//;//FAHRENHEIT;
 	//added 13/09/2025: dejando casi todo listo cuando se va a cambiar entre unidades de Farenheit o Centigrados
 
 //	if (pgrmode.bf.unitTemperature == CELSIUS)
