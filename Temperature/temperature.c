@@ -177,7 +177,7 @@ uint16_t adc_filter_1s(uint16_t adc_sample)
 */
 #define AVG_WINDOW 8
 /////////////////////////////////////////////////////////////////
-#define EMA_SHIFT_FAST  1   // α = 1/2  (muy rápido)
+#define EMA_SHIFT_FAST  1   // α = 1/2  (muy rápido), no puede ser 0
 #define EMA_SHIFT_MED   2   // α = 1/4
 #define EMA_SHIFT_SLOW  3//4   // α = 1/16 (muy estable)
 /////////////////////////////////////////////////////////////////
@@ -234,11 +234,19 @@ uint16_t adc_filter_1s(uint16_t adc_sample)
 
     //ema += diff >> shift;
     //ema += (diff+EMA_ROUND) >> shift;
-    if (diff > 0)
-        ema += (diff + EMA_ROUND) >> shift;
-    else if (diff < 0)
-        ema += (diff - EMA_ROUND) >> shift;
 
+    int32_t round_val = (1 << (shift - 1)); // Redondeo dinámico: 0.5 para el shift actual
+
+//    if (diff > 0)
+//        ema += (diff + EMA_ROUND) >> shift;
+//    else if (diff < 0)
+//        ema += (diff - EMA_ROUND) >> shift;
+
+
+    if (diff > 0)
+		ema += (diff + round_val) >> shift;
+	else if (diff < 0)
+		ema += (diff - round_val) >> shift;
 
     return (uint16_t)ema;
 }
@@ -284,13 +292,7 @@ static inline uint16_t adc_read_blocking(void)//solo cuando es SINGLE CONVERSION
 /* ============================================================
    TEMPERATURE JOB
    ============================================================ */
-//#define GAIN_Q8_8   ((uint32_t)(1.043f*256))//267   // ejemplo: 1.042 1er tarjeta
-//#define GAIN_Q8_8   ((uint32_t)(1.1f*256))//267   // ejemplo: 1.1  2da tarjeta
-//#define GAIN_Q8_8   ((uint32_t)(1.050f*256))//267   // ejemplo: 1.1  3ra tarjeta
-//#define GAIN_Q8_8   ((uint32_t)(1.075f*256))//267   // ejemplo: 1.1  4ta tarjeta
-
-#define GAIN_Q8_8   ((uint32_t)(1.06f*256))//267   // ejemplo: 1.1  5ta tarjeta
-
+#define GAIN_Q8_8   ((uint32_t)(1.06f*256))//267   // ejemplo: 1.1  1ra tarjeta
 
 static int8_t i_avg;
 int8_t temperature_job(void)

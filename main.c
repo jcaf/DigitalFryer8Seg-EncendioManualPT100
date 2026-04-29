@@ -1,5 +1,6 @@
 /* ESTA ES LA VERSION PARA 16 Y 8 MHZ OPTIMIZADO AL 23/04/2026
- * version 8Mhz
+ * Github user:jcaf
+ *  version 8Mhz
  Atmega32 version corregida del ADC
  ultima prog. a tarjeta 13 agosto 2025
  ----------------------------------------
