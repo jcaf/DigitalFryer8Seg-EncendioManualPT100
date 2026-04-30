@@ -85,107 +85,22 @@ uint16_t T_rtd_from_adc_q8_8(uint16_t adc)
 //Si sientes que el valor tarda en llegar al real al encenderse (por el acumulador del EMA), podrías "forzar" el valor inicial:
 //Esto hará que la primera lectura válida sea instantánea en lugar de ver cómo la temperatura sube lentamente desde 0 hasta el valor real.
 ////////////////////////////////////////////////////////////////////////
-#define AVG_WINDOW 8//2^3
-#define EMA_SHIFT   2        // 2 = 1/4 (rápido), 3 = 1/8 (actual)
-//+-NUEVO
-#define EMA_ROUND  (1 << (EMA_SHIFT - 1))
-//-+
+
+//#define AVG_WINDOW 8
 /*
-uint16_t adc_filter_1s(uint16_t adc_sample)
-{
-    static uint32_t acc = 0;
-    static uint8_t count = 0;
-    static int32_t ema = 0;
-    static uint8_t initialized = 0;
-
-    acc += adc_sample;
-    count++;
-
-    if (count < AVG_WINDOW)
-        return (uint16_t)ema;
-
-    uint16_t avg = acc >> 3;//divide por 2^3
-
-    acc = 0;
-    count = 0;
-
-    //Inicialización correcta
-    if (!initialized)
-    {
-    	ema = (int32_t)avg << 3; // Inicializa el EMA al valor actual para evitar la rampa inicial
-        //ema = avg;	//original
-        initialized = 1;
-    }
-    else
-    {
-        //ema += ((int32_t)avg - ema) >> 3;//original
-        ema += ((int32_t)avg - ema) >> EMA_SHIFT;
-    }
-
-    return (uint16_t)ema;
-}
-*/
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-/*
-uint16_t adc_filter_1s(uint16_t adc_sample)
-{
-    static uint32_t acc = 0;
-    static uint8_t count = 0;
-    static int32_t ema = 0;
-    static uint8_t initialized = 0;
-
-    acc += adc_sample;
-    count++;
-
-    if (count < AVG_WINDOW)
-    {
-        return (uint16_t)(acc / count);
-    }
-
-
-    uint16_t avg = acc >> 3;//divide por 2^3
-
-    acc = 0;
-    count = 0;
-
-    //Inicialización correcta
-    if (!initialized)
-    {
-        ema = avg;	//original
-        initialized = 1;
-    }
-    else
-    {
-        //ORIGINAL
-        //ema += ((int32_t)avg - ema) >> EMA_SHIFT;
-
-        //+-NUEVO
-        int32_t diff = (int32_t)avg - ema;
-
-        if (diff > 0)
-            ema += (diff + EMA_ROUND) >> EMA_SHIFT;
-        else if (diff < 0)
-            ema += (diff - EMA_ROUND) >> EMA_SHIFT;
-        //-+
-
-    }
-
-    return (uint16_t)ema;
-
-}
-*/
-#define AVG_WINDOW 8
+ * el AVG_WINDOWS para 16Mhz tiene que ser de 8 para arriba, porque si no se muestra muy cambiante
+ */
+#define AVG_WINDOW_SHIFT_POT2 3
+#define AVG_WINDOW (1<<AVG_WINDOW_SHIFT_POT2)
 /////////////////////////////////////////////////////////////////
 #define EMA_SHIFT_FAST  1   // α = 1/2  (muy rápido), no puede ser 0
 #define EMA_SHIFT_MED   2   // α = 1/4
 #define EMA_SHIFT_SLOW  3//4   // α = 1/16 (muy estable)
 /////////////////////////////////////////////////////////////////
 #define THRESH_FAST  5     // cambio grande
-#define THRESH_MED   1      // cambio medio
+#define THRESH_MED   2      // cambio medio
 
-
-/*
+ //con AVG_WINDOW
 uint16_t adc_filter_1s(uint16_t adc_sample)
 {
     static uint32_t acc = 0;
@@ -200,9 +115,12 @@ uint16_t adc_filter_1s(uint16_t adc_sample)
     if (count < AVG_WINDOW)
     {
         return (uint16_t)(acc / count);
+        //return ema;
     }
 
-    uint16_t avg = acc >> 3;
+    //uint16_t avg = acc >> 3;
+    uint16_t avg = acc >> AVG_WINDOW_SHIFT_POT2;
+
     acc = 0;
     count = 0;
 
@@ -231,17 +149,7 @@ uint16_t adc_filter_1s(uint16_t adc_sample)
     {
         shift = EMA_SHIFT_SLOW;   // filtrar fuerte
     }
-
-    //ema += diff >> shift;
-    //ema += (diff+EMA_ROUND) >> shift;
-
     int32_t round_val = (1 << (shift - 1)); // Redondeo dinámico: 0.5 para el shift actual
-
-//    if (diff > 0)
-//        ema += (diff + EMA_ROUND) >> shift;
-//    else if (diff < 0)
-//        ema += (diff - EMA_ROUND) >> shift;
-
 
     if (diff > 0)
 		ema += (diff + round_val) >> shift;
@@ -250,7 +158,8 @@ uint16_t adc_filter_1s(uint16_t adc_sample)
 
     return (uint16_t)ema;
 }
-*/
+/*
+//sin AVG_WINDOW
 uint16_t adc_filter_1s(uint16_t sample)
 {
     static int32_t ema = 0;
@@ -267,18 +176,7 @@ uint16_t adc_filter_1s(uint16_t sample)
     int32_t abs_diff = (diff >= 0) ? diff : -diff;
 
     uint8_t shift;
-////////////////////////////////////////////
-//    if (abs_diff > THRESH_FAST)
-//        shift = 1;   // α = 1/2 (muy rápido)
-//    else if (abs_diff > THRESH_MED)
-//        shift = 2;   // α = 1/4
-//    else
-//        shift = 3;   // α = 1/16 (muy suave)
-//
-//    ema += diff >> shift;
-//////////////////////////////////////
-///
-///
+
 	if (abs_diff > THRESH_FAST)//5
    {
 	   shift = EMA_SHIFT_FAST;   // seguir rápido
@@ -299,10 +197,8 @@ uint16_t adc_filter_1s(uint16_t sample)
 	   ema += (diff - round_val) >> shift;
 
    return (uint16_t)ema;
-
-
-
 }
+*/
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 /*
@@ -344,7 +240,11 @@ static inline uint16_t adc_read_blocking(void)//solo cuando es SINGLE CONVERSION
 /* ============================================================
    TEMPERATURE JOB
    ============================================================ */
-#define GAIN_Q8_8   ((uint32_t)(1.06f*256))//267   // ejemplo: 1.1  1ra tarjeta
+//#define GAIN_Q8_8   ((uint32_t)(1.07f*256))//267   //1ra tarjeta
+//#define GAIN_Q8_8   ((uint32_t)(1.06f*256))//267   //2da tarjeta
+//#define GAIN_Q8_8   ((uint32_t)(1.06f*256))//267   //3ra tarjeta
+//#define GAIN_Q8_8   ((uint32_t)(1.05f*256))//267   //4ta tarjeta
+#define GAIN_Q8_8   ((uint32_t)(1.035f*256))//267   //5ta tarjeta
 
 static int8_t i_avg;
 int8_t temperature_job(void)

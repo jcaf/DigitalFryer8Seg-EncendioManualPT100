@@ -212,7 +212,7 @@ void fryer_init(void)
 }
 
 
-#define ADC_DUMMY_CONVERSION_NUMMAX 2
+#define ADC_DUMMY_CONVERSION_NUMMAX 1	//Para 8Mhz y 16Mhz, 1 es sufuciente
 //2. El truco de la "Doble Conversión" para Referencias
 //Para mantener la precisión máxima al cambiar de AVCC (5V) a Interna (2.56V), el problema no es el canal, sino la carga del capacitor en el pin AREF.
 //Propuesta: En lugar de un delay por software, hacemos 2 conversiones dummy rápidas. La primera descarta el residuo de voltaje viejo, la segunda asegura que el comparador ya está estabilizado.
@@ -411,12 +411,10 @@ int main(void)
 	int counter1 = 0;
 	unsigned char str[10];//cambiar a char_arr
 	unsigned char data_array_buffer[DISP7S_TOTAL_NUMMAX];
-	int8_t systick_counter0=0;
 	int16_t counter_displayACIER=0;
 
 	uint16_t ADCcoordinadorTiempos_timer=0;
 	int8_t ADCcoordinadorTiempos_sm0=0;
-
 
 
 	disp7s_init();//new
@@ -424,7 +422,7 @@ int main(void)
 	eeprom_read_block((struct _Tcoccion *)&tmprture_coccion , (struct _Tcoccion *)&TMPRTURE_COCCION, sizeof(struct _Tcoccion) );
 
 	//+-
-	pgrmode.bf.unitTemperature = CELSIUS;//FAHRENHEIT;// CELSIUS;//;//;//FAHRENHEIT;
+	pgrmode.bf.unitTemperature = FAHRENHEIT;//FAHRENHEIT;//CELSIUS;//;//;//FAHRENHEIT;
 	//added 13/09/2025: dejando casi todo listo cuando se va a cambiar entre unidades de Farenheit o Centigrados
 
 //	if (pgrmode.bf.unitTemperature == CELSIUS)
@@ -510,11 +508,11 @@ int main(void)
 		disp7s_job();
 		if (mainflag.sysTickMs)
 		{
-			if (1)//(++systick_counter0 >= (1/SYSTICK_MS) )//ms
-			{
-				//systick_counter0 = 0x00;
-				//disp7s_job();
-			}
+//			if (1)//(++systick_counter0 >= (1/SYSTICK_MS) )//ms
+//			{
+//				//systick_counter0 = 0x00;
+//				//disp7s_job();
+//			}
 		}
 
 		if (main_schedule.bf.display_ACIERInd == 0)
@@ -537,7 +535,9 @@ int main(void)
 				{
 					//if (++ADCcoordinadorTiempos_timer >= (150/SYSTICK_MS))    //20ms
 					//if (++ADCcoordinadorTiempos_timer >= (15/SYSTICK_MS))    //20ms
-					if (++ADCcoordinadorTiempos_timer >= (7/SYSTICK_MS))    //20ms
+
+					//1/SYSTICK_MS, 1 para 8Mhz, 15 para 16Mhz
+					if (++ADCcoordinadorTiempos_timer >= (15/SYSTICK_MS))    //15 para 16MHz es optimo para que no haya muchos cambios de grados
 					{
 						ADCcoordinadorTiempos_timer = 0;
 
