@@ -90,15 +90,15 @@ uint16_t T_rtd_from_adc_q8_8(uint16_t adc)
 /*
  * el AVG_WINDOWS para 16Mhz tiene que ser de 8 para arriba, porque si no se muestra muy cambiante
  */
-#define AVG_WINDOW_SHIFT_POT2 3
+#define AVG_WINDOW_SHIFT_POT2 2
 #define AVG_WINDOW (1<<AVG_WINDOW_SHIFT_POT2)
 /////////////////////////////////////////////////////////////////
 #define EMA_SHIFT_FAST  1   // α = 1/2  (muy rápido), no puede ser 0
 #define EMA_SHIFT_MED   2   // α = 1/4
 #define EMA_SHIFT_SLOW  3//4   // α = 1/16 (muy estable)
 /////////////////////////////////////////////////////////////////
-#define THRESH_FAST  5     // cambio grande
-#define THRESH_MED   2      // cambio medio
+#define THRESH_FAST  2     // cambio grande
+#define THRESH_MED   1      // cambio medio
 
  //con AVG_WINDOW
 uint16_t adc_filter_1s(uint16_t adc_sample)
@@ -244,7 +244,7 @@ static inline uint16_t adc_read_blocking(void)//solo cuando es SINGLE CONVERSION
 //#define GAIN_Q8_8   ((uint32_t)(1.06f*256))//267   //2da tarjeta
 //#define GAIN_Q8_8   ((uint32_t)(1.06f*256))//267   //3ra tarjeta
 //#define GAIN_Q8_8   ((uint32_t)(1.05f*256))//267   //4ta tarjeta
-#define GAIN_Q8_8   ((uint32_t)(1.035f*256))//267   //5ta tarjeta
+#define GAIN_Q8_8   ((uint32_t)(1.03f*256))//267   //5ta tarjeta
 
 static int8_t i_avg;
 int8_t temperature_job(void)
@@ -275,6 +275,7 @@ int8_t temperature_job(void)
     //T_q8_8 = ((uint32_t)T_q8_8 * GAIN_Q8_8) >> 8;
     T_q8_8 = ( ((uint32_t)T_q8_8 * GAIN_Q8_8) +128) >> 8;// +128 es 0.5 en Q8.8 para redondear
 
+//T_q8_8+= (100<<8);
 
     if (pgrmode.bf.unitTemperature == FAHRENHEIT)//T_C = ((float)T_C *1.8f) + 32;
     {

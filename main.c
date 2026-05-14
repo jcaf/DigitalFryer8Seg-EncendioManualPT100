@@ -18,7 +18,7 @@
  [root@JCAFPC Release]# avrdude -c usbasp -B5 -p m32 -U flash:w:DigitalFryerDisplay8Seg-EncendidoManual.hex
  [root@JCAFPC Release]# avrdude -c usbasp -B1 -p m32 -V -U flash:w:DigitalFryerDisplay8Seg-EncendidoManual.hex (SIN VERIFICAR)
  [jcaf@JCAFPC Release]$ avrdude -c usbasp -B5 -p m32 (ONLY A RESET)
-
+avrdude -c dragon_isp -B5 -p m32 -U flash:w:DigitalFryerDisplay8Seg-EncendidoManual.hex
  NUEVO
  [root@JCAFPC Release]# avrdude -c usbasp -B0.3 -p m32 -V -U flash:w:digitalFryer.hex (MAS RAPIDO!)
  Tambien puede ser sin -BX.. cuando ya esta bien configurado los fuses:
@@ -422,7 +422,7 @@ int main(void)
 	eeprom_read_block((struct _Tcoccion *)&tmprture_coccion , (struct _Tcoccion *)&TMPRTURE_COCCION, sizeof(struct _Tcoccion) );
 
 	//+-
-	pgrmode.bf.unitTemperature = FAHRENHEIT;//FAHRENHEIT;//CELSIUS;//;//;//FAHRENHEIT;
+	pgrmode.bf.unitTemperature = FAHRENHEIT;//CELSIUS;//FAHRENHEIT;//CELSIUS;//FAHRENHEIT;//CELSIUS;////FAHRENHEIT;//;//;//FAHRENHEIT;
 	//added 13/09/2025: dejando casi todo listo cuando se va a cambiar entre unidades de Farenheit o Centigrados
 
 //	if (pgrmode.bf.unitTemperature == CELSIUS)
@@ -537,7 +537,8 @@ int main(void)
 					//if (++ADCcoordinadorTiempos_timer >= (15/SYSTICK_MS))    //20ms
 
 					//1/SYSTICK_MS, 1 para 8Mhz, 15 para 16Mhz
-					if (++ADCcoordinadorTiempos_timer >= (15/SYSTICK_MS))    //15 para 16MHz es optimo para que no haya muchos cambios de grados
+					//if (++ADCcoordinadorTiempos_timer >= (15/SYSTICK_MS))    //15 para 16MHz es optimo para que no haya muchos cambios de grados
+					if (++ADCcoordinadorTiempos_timer >= (1/SYSTICK_MS))    //15 para 16MHz es optimo para que no haya muchos cambios de grados
 					{
 						ADCcoordinadorTiempos_timer = 0;
 
